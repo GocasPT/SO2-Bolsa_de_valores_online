@@ -17,7 +17,7 @@
 
 using namespace std;
 
-int _tmain(int argc, TCHAR* argv[]) {
+int _tmain(int argc, tstring argv[]) {
 	// VARIABLES
 
 #ifdef UNICODE
