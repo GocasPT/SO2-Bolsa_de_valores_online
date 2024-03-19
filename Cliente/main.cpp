@@ -1,8 +1,21 @@
-#include <io.h>
-#include <stdio.h>
-#include <tchar.h>
-#include <fcntl.h> 
 #include <windows.h>
+#include <tchar.h>
+#include <fcntl.h>
+#include <io.h>
+#include <iostream>
+#include <string>
+
+#ifdef UNICODE 
+#define tcout wcout
+#define tcin wcin
+#define tstring wstring
+#else
+#define tcout cout
+#define tcin cin
+#define tstring string
+#endif
+
+using namespace std;
 
 int _tmain(int argc, TCHAR* argv[]) {
 	// VARIABLES
@@ -12,7 +25,7 @@ int _tmain(int argc, TCHAR* argv[]) {
 	_setmode(_fileno(stdout), _O_WTEXT);
 #endif 
 
-	_tprintf(TEXT("Sou o programa \'Cliente\'"));
+	tcout << TEXT("Sou o programa \'Cliente\'") << endl;
 
 	return 0;
 }
