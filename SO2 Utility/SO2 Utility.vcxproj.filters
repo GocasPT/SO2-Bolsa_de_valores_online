@@ -15,7 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SO2.h">
+    <ClInclude Include="SO2 Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SO2 Named Pipe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SO2 Shared Memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

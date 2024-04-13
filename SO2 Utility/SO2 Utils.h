@@ -15,6 +15,8 @@
 	#define _tmain main
 #endif
 
+#define MUTEX_BOLSA_NAME _T("BOLSA_MUTEX")
+
 typedef struct {
 	//TODO: list of the stocks owned
 	int PLACE_HOLDER;
