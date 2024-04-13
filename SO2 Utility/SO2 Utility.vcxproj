@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{d4a7453e-e9a1-45fc-b58d-5a82010f30a3}</ProjectGuid>
-    <RootNamespace>Bolsa</RootNamespace>
+    <ProjectGuid>{ad1144a7-4eaa-4ff8-9444-cac4ee3f6629}</ProjectGuid>
+    <RootNamespace>SO2Utility</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -104,7 +104,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\SO2 Utility;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,13 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="named pipe.cpp" />
-    <ClCompile Include="shared memory.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="named pipe.h" />
-    <ClInclude Include="shared memory.h" />
+    <ClInclude Include="SO2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

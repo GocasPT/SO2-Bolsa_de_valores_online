@@ -1,23 +1,10 @@
-#include <windows.h>
-#include <tchar.h>
+#include "SO2.h"
+#include "shared memory.h"
 #include <fcntl.h>
 #include <io.h>
 #include <iostream>
-#include <string>
 
-#ifdef UNICODE 
-#define tcout wcout
-#define tcin wcin
-#define tstring wstring
-#else
-#define tcout cout
-#define tcin cin
-#define tstring string
-#endif
-
-using namespace std;
-
-int _tmain(int argc, tstring argv[]) {
+int _tmain(int argc, std::TSTRING argv[]) {
 	// VARIABLES
 
 #ifdef UNICODE
@@ -25,7 +12,8 @@ int _tmain(int argc, tstring argv[]) {
 	_setmode(_fileno(stdout), _O_WTEXT);
 #endif 
 
-	tcout << TEXT("Sou o programa \'Board\'") << endl;
+	std::tcout << TEXT("Sou o programa \'Board\'") << std::endl;
+	std::tcin;
 
 	return 0;
 }
