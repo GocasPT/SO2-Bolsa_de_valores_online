@@ -2,13 +2,14 @@
 #ifndef NAMED_PIPE_H
 #define NAMED_PIPE_H
 
-#include "SO2_Utils.h"
-#include "SO2_NamedPipe.h"
 #include "bolsa.h"
+#include "SO2_NamedPipe.h"
 
-DWORD WINAPI clienteReceiver(LPVOID lpParam);
-void sendMessage(BOLSA &bolsa, std::TSTRING msg);
-
-//TODO: Functions for named  pipe (server-side)
+namespace NamedPipe {
+	//TODO: Functions for named  pipe (server-side)
+	void config(BOLSA& servidor);
+	DWORD WINAPI reciverRoutine(LPVOID lpParam);
+	void send(BOLSA& servidor, std::TSTRING msg);
+}
 
 #endif // !NAMED_PIPE_H

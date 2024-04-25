@@ -1,6 +1,14 @@
 #include "sharedMemory.h"
 
-void updateSharedMemory(BOLSA &bolsa) {
+void SharedMemory::config(BOLSA& servidor) {
+	/*TODO:
+	  - create shared memory
+	  - set up handler
+	  - set up event
+	*/
+}
+
+void SharedMemory::update(BOLSA &servidor) {
 	//TODO:
 	// - format date to write
 	// - write data

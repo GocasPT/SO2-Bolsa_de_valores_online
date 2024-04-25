@@ -1,11 +1,10 @@
-#include "SO2_Utils.h"
-#include "namedPipe.h"
+﻿#include "namedPipe.h"
 #include "sharedMemory.h"
-#include "bolsa.h"
+#include "registry.h"
 #include <fcntl.h>
 #include <io.h>
 
-BOOL existBolsaRunning() {
+BOOL checkServerRunning() {
 	HANDLE hPipeTest = CreateNamedPipe(NAMED_PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, 0, NULL);
 	if (GetLastError() == ERROR_PIPE_BUSY) {
 		CloseHandle(hPipeTest);
@@ -17,12 +16,34 @@ BOOL existBolsaRunning() {
 	}
 }
 
-void setUpServidor(BOLSA& servidor) {
-	//TODO: set up servidor
-	// - read registry
-	// - create shared memory
-	// - create named pipe (call center)
-	// - create thread (call center)
+void configServer(BOLSA &servidor) {
+	Registry::config(servidor);
+	SharedMemory::config(servidor);
+	NamedPipe::config(servidor);
+}
+
+void consoleRoutine(BOLSA& servidor) {
+	std::TSTRING input;
+	std::vector<std::TSTRING> args;
+
+	//TODO: change this for flag (any error, break loop → for safe) 
+	do {
+		std::tcout << _T(">> ");
+		std::getline(std::tcin, input);
+
+		//TODO: slipt input into args → args[0] = cmd, args[1] = arg1, args[2] = arg2, etc
+
+		//TODO: PLACEHOLDER
+		std::tcout << _T("Comando: \'") << input << _T("\'") << std::endl;
+
+	} while (input.compare(_T("close")));
+}
+
+void closeServer(BOLSA& servidor) {
+	/*TODO:
+	  - CloseHandle for all handles
+	  - etc
+	*/
 }
 
 int _tmain(int argc, std::TSTRING argv[]) {
@@ -36,14 +57,16 @@ int _tmain(int argc, std::TSTRING argv[]) {
 	std::tcout << TEXT("Sou o programa \'Bolsa\'") << std::endl;
 	std::tcin;
 
-	if (existBolsaRunning()) {
+	if (checkServerRunning()) {
 		std::tcout << TEXT("Ja existe uma instancia do programa \'Bolsa\' rodando") << std::endl;
 		exit(1);
 	}
 
-	setUpServidor(servidor);
+	configServer(servidor);
 
-	// TODO: main loop (console)
+	consoleRoutine(servidor);
+
+	closeServer(servidor);
 
 	return 0;
 }

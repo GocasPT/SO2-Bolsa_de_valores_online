@@ -2,12 +2,12 @@
 #include <algorithm>
 
 //TODO: check
-BOOL validateUser(USER user) {
+BOOL UserManager::validateUser(USER user) {
 	return true;
 }
 
 //TODO: check
-void addUser(BOLSA& bolsa, USER newUser) {
+void UserManager::addUser(BOLSA& bolsa, USER newUser) {
 	std::vector<USER> &userList = bolsa.userList;
 	std::queue<USER> &userQueue = bolsa.userQueue;
 
@@ -18,7 +18,7 @@ void addUser(BOLSA& bolsa, USER newUser) {
 }
 
 //TODO: check
-void removeUser(BOLSA& bolsa, std::TSTRING userName) {
+void UserManager::removeUser(BOLSA& bolsa, std::TSTRING userName) {
 	std::vector<USER>& userList = bolsa.userList;
 	std::queue<USER>& userQueue = bolsa.userQueue;
 
@@ -33,7 +33,7 @@ void removeUser(BOLSA& bolsa, std::TSTRING userName) {
 }
 
 //TODO: check
-USER* getUser(BOLSA& bolsa, std::TSTRING userName) {
+USER* UserManager::getUser(BOLSA& bolsa, std::TSTRING userName) {
 	std::vector<USER>& userList = bolsa.userList;
 
 	auto it = std::find_if(userList.begin(), userList.end(), [userName](USER user) { return user.name == userName; });
@@ -44,7 +44,7 @@ USER* getUser(BOLSA& bolsa, std::TSTRING userName) {
 }
 
 //TODO: check
-void releaseUsers(BOLSA& bolsa) {
+void UserManager::releaseUsers(BOLSA& bolsa) {
 	std::vector<USER>& userList = bolsa.userList;
 	std::queue<USER>& userQueue = bolsa.userQueue;
 

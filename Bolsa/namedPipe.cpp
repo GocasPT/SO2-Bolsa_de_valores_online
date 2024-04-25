@@ -1,6 +1,15 @@
 #include "namedPipe.h"
 
-DWORD WINAPI clienteReceiver(LPVOID lpParam) {
+void NamedPipe::config(BOLSA& servidor) {
+	/*TODO:
+	  - create named pipe
+	  - set up handler
+	  - set thread to reciver
+	  - set up critical section
+	*/
+}
+
+DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 	//TODO:
 	// - cast data
 	// - loop reciver and add to list or queue
@@ -9,7 +18,7 @@ DWORD WINAPI clienteReceiver(LPVOID lpParam) {
 	return 0;
 }
 
-void sendMessage(BOLSA &bolsa, std::TSTRING msg) {
+void NamedPipe::send(BOLSA &servidor, std::TSTRING msg) {
 	//TODO:
 	// - format message to send
 	// - send message
