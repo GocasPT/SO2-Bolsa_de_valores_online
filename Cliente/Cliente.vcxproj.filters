@@ -21,9 +21,15 @@
     <ClCompile Include="named pipe.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="named pipe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

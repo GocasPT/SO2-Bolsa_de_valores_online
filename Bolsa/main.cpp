@@ -1,9 +1,9 @@
-#include "SO2.h"
-#include "named pipe.h"
-#include "shared memory.h"
+#include "SO2_Utils.h"
+#include "namedPipe.h"
+#include "sharedMemory.h"
+#include "bolsa.h"
 #include <fcntl.h>
 #include <io.h>
-#include <iostream>
 
 int _tmain(int argc, std::TSTRING argv[]) {
 	// VARIABLES

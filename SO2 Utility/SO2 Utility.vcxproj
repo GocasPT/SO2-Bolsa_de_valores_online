@@ -127,9 +127,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="SO2 Named Pipe.h" />
-    <ClInclude Include="SO2 Shared Memory.h" />
-    <ClInclude Include="SO2 Utils.h" />
+    <ClInclude Include="SO2_NamedPipe.h" />
+    <ClInclude Include="SO2_SharedMemory.h" />
+    <ClInclude Include="SO2_Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

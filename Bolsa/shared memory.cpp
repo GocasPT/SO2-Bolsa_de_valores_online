@@ -1,3 +1,3 @@
-#include "shared memory.h"
+#include "sharedMemory.h"
 
 //TODO

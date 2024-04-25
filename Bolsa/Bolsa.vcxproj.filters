@@ -24,12 +24,21 @@
     <ClCompile Include="named pipe.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="userManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="shared memory.h">
+    <ClInclude Include="sharedMemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="named pipe.h">
+    <ClInclude Include="namedPipe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="userManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bolsa.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

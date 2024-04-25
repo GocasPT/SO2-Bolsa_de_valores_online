@@ -1,7 +1,10 @@
 #pragma once
+#ifndef SO2_UTILS_H
+#define SO2_UTILS_H
 
 #include <windows.h>
 #include <string>
+#include <iostream>
 
 #ifdef UNICODE
 	#define tcout wcout
@@ -9,11 +12,13 @@
 	#define TSTRING wstring
 	#define _tmain wmain
 #else
-	#define tcout cout
-	#define tcin cin
-	#define TSTRING string
+	#define tcout std::cout
+	#define tcin std::cin
+	#define TSTRING std::string
 	#define _tmain main
 #endif
+
+#define MAX 256
 
 #define MUTEX_BOLSA_NAME _T("BOLSA_MUTEX")
 
@@ -23,14 +28,14 @@ typedef struct {
 } STOCK_WALLET;
 
 typedef struct {
-	std::TSTRING name;
-	std::TSTRING password;
+	TCHAR name[MAX];
+	TCHAR password[MAX];
 	DWORD balance;
 	STOCK_WALLET wallet; //TODO: check this
 } USER;
 
 typedef struct {
-	std::TSTRING name;
+	TCHAR name[MAX];
 	DWORD numFreeStocks;
 	DWORD pricePerStock;
 } COMPANY;
@@ -42,10 +47,12 @@ typedef struct {
 
 typedef struct {
 	//TODO
-	std::TSTRING name;
+	TCHAR name[MAX];
 } REQUEST_COMMAND;
 
 typedef struct {
 	//TODO
-	std::TSTRING message;
+	TCHAR message[MAX];
 } FEEDBACK_SERVER;
+
+#endif // !SO2_UTILS_H

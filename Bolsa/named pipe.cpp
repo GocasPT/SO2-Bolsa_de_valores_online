@@ -1,3 +1,3 @@
-#include "named pipe.h"
+#include "namedPipe.h"
 
 //TODO

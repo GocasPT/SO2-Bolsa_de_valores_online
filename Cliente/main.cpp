@@ -1,10 +1,10 @@
-#include "SO2.h"
+//#include "SO2.h"
 #include "named pipe.h"
+#include "UI.h"
 #include <fcntl.h>
 #include <io.h>
-#include <iostream>
 
-int _tmain(int argc, std::TSTRING argv[]) {
+int _tmain(int argc, TSTRING argv[]) {
 	// VARIABLES
 
 #ifdef UNICODE
@@ -12,8 +12,8 @@ int _tmain(int argc, std::TSTRING argv[]) {
 	_setmode(_fileno(stdout), _O_WTEXT);
 #endif 
 
-	std::tcout << TEXT("Sou o programa \'Cliente\'") << std::endl;
-	std::tcin;
+	tcout << TEXT("Sou o programa \'Cliente\'") << std::endl;
+	tcin;
 
 	return 0;
 }

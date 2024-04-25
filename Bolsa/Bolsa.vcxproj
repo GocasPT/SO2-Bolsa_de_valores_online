@@ -131,10 +131,13 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="named pipe.cpp" />
     <ClCompile Include="shared memory.cpp" />
+    <ClCompile Include="userManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="named pipe.h" />
-    <ClInclude Include="shared memory.h" />
+    <ClInclude Include="bolsa.h" />
+    <ClInclude Include="namedPipe.h" />
+    <ClInclude Include="sharedMemory.h" />
+    <ClInclude Include="userManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
