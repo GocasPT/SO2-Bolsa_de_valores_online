@@ -11,6 +11,12 @@ typedef struct {
 	std::vector<USER> userList;
 	std::queue<USER> userQueue;
 	DWORD maxUsers;
+
+	HANDLE hSharedMemory;
+	HANDLE hEvent;
+
+	std::vector<HANDLE> hUsersThreadList;
+	std::vector<HANDLE> hUsersPipesList;
 } BOLSA;
 
 #endif // !BOLSA_H

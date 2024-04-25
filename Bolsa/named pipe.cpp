@@ -1,3 +1,0 @@
-#include "namedPipe.h"
-
-//TODO

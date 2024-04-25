@@ -4,6 +4,10 @@
 
 #include "SO2_Utils.h"
 #include "SO2_NamedPipe.h"
+#include "bolsa.h"
+
+DWORD WINAPI clienteReceiver(LPVOID lpParam);
+void sendMessage(BOLSA &bolsa, std::TSTRING msg);
 
 //TODO: Functions for named  pipe (server-side)
 
