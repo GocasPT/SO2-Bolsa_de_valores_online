@@ -10,6 +10,7 @@ namespace NamedPipe {
 	void config(BOLSA& servidor);
 	DWORD WINAPI reciverRoutine(LPVOID lpParam);
 	void send(BOLSA& servidor, std::TSTRING msg);
+	void close(BOLSA& servidor);
 }
 
 #endif // !NAMED_PIPE_H

@@ -3,6 +3,7 @@
 #define SO2_UTILS_H
 
 #include <windows.h>
+#include <tchar.h>
 #include <string>
 #include <iostream>
 

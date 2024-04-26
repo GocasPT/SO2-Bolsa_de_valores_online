@@ -1,12 +1,13 @@
 ﻿#include "namedPipe.h"
 #include "sharedMemory.h"
 #include "registry.h"
+#include "commands.h"
 #include <fcntl.h>
 #include <io.h>
 
 BOOL checkServerRunning() {
-	HANDLE hPipeTest = CreateNamedPipe(NAMED_PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, 0, NULL);
-	if (GetLastError() == ERROR_PIPE_BUSY) {
+	HANDLE hPipeTest = CreateNamedPipe(NAMED_PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, 1000, NULL);
+	if (GetLastError() == ERROR_ALREADY_EXISTS) {
 		CloseHandle(hPipeTest);
 		return TRUE;
 	}
@@ -20,30 +21,17 @@ void configServer(BOLSA &servidor) {
 	Registry::config(servidor);
 	SharedMemory::config(servidor);
 	NamedPipe::config(servidor);
-}
 
-void consoleRoutine(BOLSA& servidor) {
-	std::TSTRING input;
-	std::vector<std::TSTRING> args;
-
-	//TODO: change this for flag (any error, break loop → for safe) 
-	do {
-		std::tcout << _T(">> ");
-		std::getline(std::tcin, input);
-
-		//TODO: slipt input into args → args[0] = cmd, args[1] = arg1, args[2] = arg2, etc
-
-		//TODO: PLACEHOLDER
-		std::tcout << _T("Comando: \'") << input << _T("\'") << std::endl;
-
-	} while (input.compare(_T("close")));
+	//TODO: check if all handlers are not NULL (error code)
 }
 
 void closeServer(BOLSA& servidor) {
-	/*TODO:
-	  - CloseHandle for all handles
-	  - etc
-	*/
+	servidor.tData.isRunning = FALSE;
+
+	WaitForMultipleObjects(1, &servidor.hReciverThread, TRUE, INFINITE); //TODO: check if is this argument is correct
+
+	SharedMemory::close(servidor);
+	NamedPipe::close(servidor);
 }
 
 int _tmain(int argc, std::TSTRING argv[]) {
@@ -54,17 +42,17 @@ int _tmain(int argc, std::TSTRING argv[]) {
 	_setmode(_fileno(stdout), _O_WTEXT);
 #endif 
 
-	std::tcout << TEXT("Sou o programa \'Bolsa\'") << std::endl;
+	std::tcout << _T("Sou o programa \'Bolsa\'") << std::endl;
 	std::tcin;
 
 	if (checkServerRunning()) {
-		std::tcout << TEXT("Ja existe uma instancia do programa \'Bolsa\' rodando") << std::endl;
+		std::tcout << _T("Ja existe uma instancia do programa \'Bolsa\' rodando") << std::endl;
 		exit(1);
 	}
 
 	configServer(servidor);
 
-	consoleRoutine(servidor);
+	cmd::consoleRoutine(servidor);
 
 	closeServer(servidor);
 

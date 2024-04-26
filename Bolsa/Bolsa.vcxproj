@@ -128,6 +128,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="commands.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="namedPipe.cpp" />
     <ClCompile Include="registry.cpp" />
@@ -136,6 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bolsa.h" />
+    <ClInclude Include="commands.h" />
     <ClInclude Include="namedPipe.h" />
     <ClInclude Include="registry.h" />
     <ClInclude Include="sharedMemory.h" />

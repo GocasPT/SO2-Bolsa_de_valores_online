@@ -6,6 +6,14 @@
 #include <vector>
 #include <queue>
 
+typedef struct {
+	BOOL isRunning;
+	std::vector<USER>* userList;
+	std::queue<USER>* userQueue;
+	DWORD maxUsers;
+	CRITICAL_SECTION* cs;
+} TDATA;
+
 //TODO: check if is missing any field
 typedef struct {
 	// Registry
@@ -21,10 +29,12 @@ typedef struct {
 	HANDLE hEvent;
 
 	// Named Pipe
+	HANDLE hPipe;
 	HANDLE hReciverThread;
 	std::vector<HANDLE> hUsersThreadList;
 	std::vector<HANDLE> hUsersPipesList;
 	CRITICAL_SECTION cs;
+	TDATA tData;
 } BOLSA;
 
 #endif // !BOLSA_H

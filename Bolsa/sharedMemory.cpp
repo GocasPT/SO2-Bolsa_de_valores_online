@@ -9,8 +9,16 @@ void SharedMemory::config(BOLSA& servidor) {
 }
 
 void SharedMemory::update(BOLSA &servidor) {
-	//TODO:
-	// - format date to write
-	// - write data
-	// - trigger event
+	/*TODO
+	  - format date to write
+	  - write data
+	  - trigger event
+	*/
+}
+
+void SharedMemory::close(BOLSA& servidor) {
+	/*TODO:
+	  - close handler
+	  - close event
+	*/
 }
