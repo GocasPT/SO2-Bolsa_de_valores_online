@@ -1,15 +1,17 @@
 #include "namedPipe.h"
 
 void NamedPipe::config(BOLSA& servidor) {
+	std::tcout << _T("A configurar o named pipe para receber os clientes...") << std::endl;
+
 	HANDLE &hPipe = servidor.hPipe;
 	HANDLE &hReciverThread = servidor.hReciverThread;
 	CRITICAL_SECTION &cs = servidor.cs;
 
 	//TODO: set input and output for duplex (we can define 2 different structs at will)
-	//hPipe = CreateNamedPipe(NAMED_PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, sizeof(/*INPUT_STRUCT*/), sizeof(/*OUTPUT_STRUCT*/), 1000, NULL);
-	hPipe = CreateNamedPipe(NAMED_PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, 1000, NULL);
+	//hPipe = CreateNamedPipe(NAMED_PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, sizeof(/*INPUT_STRUCT*/), sizeof(/*OUTPUT_STRUCT*/), PIPE_TIMEOUT, NULL);
+	hPipe = CreateNamedPipe(PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, PIPE_TIMEOUT, NULL);
 	if (hPipe == INVALID_HANDLE_VALUE) {
-		std::tcout << _T("Erro ao criar o named pipe do servidor (") << GetLastError() << _T(")") << std::endl;
+		std::tcout << TAG_ERROR << _T("Criar o named pipe do servidor (") << GetLastError() << _T(")") << std::endl;
 		return; //TODO: return error code
 	}
 
@@ -24,6 +26,8 @@ void NamedPipe::config(BOLSA& servidor) {
 	//	CloseHandle(hPipe);
 	//	return; //TODO: return error code
 	//}
+
+	std::tcout << TAG_NORMAL << _T("Configuração do named piep conculida, já está à esperade um cliente para connectar") << std::endl << std::endl;
 }
 
 DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
@@ -56,6 +60,8 @@ void NamedPipe::send(BOLSA &servidor, std::TSTRING msg) {
 }
 
 void NamedPipe::close(BOLSA& servidor) {
+	std::tcout << _T("A fechar o named pipe do servidor...") << std::endl;
+
 	HANDLE &hPipe = servidor.hPipe;
 	HANDLE &hReciverThread = servidor.hReciverThread;
 	CRITICAL_SECTION &cs = servidor.cs;
@@ -63,4 +69,6 @@ void NamedPipe::close(BOLSA& servidor) {
 	CloseHandle(hReciverThread);
 	DeleteCriticalSection(&cs);
 	CloseHandle(hPipe);
+
+	std::tcout << TAG_NORMAL << _T("Named pipe fechado com sucesso") << std::endl << std::endl;
 }

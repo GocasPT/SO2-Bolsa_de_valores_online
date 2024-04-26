@@ -31,14 +31,14 @@ typedef struct {
 typedef struct {
 	TCHAR name[MAX];
 	TCHAR password[MAX];
-	DWORD balance;
+	float balance;
 	STOCK_WALLET wallet; //TODO: check this
 } USER;
 
 typedef struct {
 	TCHAR name[MAX];
 	DWORD numFreeStocks;
-	DWORD pricePerStock;
+	float pricePerStock;
 } COMPANY;
 
 typedef struct {

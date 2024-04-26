@@ -5,6 +5,8 @@
 #include "bolsa.h"
 #include "SO2_NamedPipe.h"
 
+#define PIPE_TIMEOUT 1000
+
 namespace NamedPipe {
 	//TODO: Functions for named  pipe (server-side)
 	void config(BOLSA& servidor);

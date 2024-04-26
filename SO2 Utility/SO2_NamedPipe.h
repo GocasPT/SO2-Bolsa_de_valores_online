@@ -4,7 +4,6 @@
 
 #include <tchar.h>
 
-#define NAMED_PIPE_BOLSA_NAME _T("\\\\.\\pipe\\bolsa")
-#define NAMED_PIPE_CLIENTE_NAME_FORMAT _T("\\\\.\\pipe\\cliente_%d")
+#define PIPE_BOLSA_NAME _T("\\\\.\\pipe\\bolsa")
 
 #endif // !SO2_NAMED_PIPE_H

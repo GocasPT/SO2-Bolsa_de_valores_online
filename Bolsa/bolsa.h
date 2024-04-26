@@ -6,6 +6,10 @@
 #include <vector>
 #include <queue>
 
+#define TAG_NORMAL _T("(BOLSA) ")
+#define TAG_ERROR _T("[ERRO] ")
+#define TAG_WARNING _T("[WARNING] ")
+
 typedef struct {
 	BOOL isRunning;
 	std::vector<USER>* userList;
@@ -17,12 +21,15 @@ typedef struct {
 //TODO: check if is missing any field
 typedef struct {
 	// Registry
-	HKEY hKey;
+	HKEY hKey; //TODO: we need this?
 
 	// User Manager
 	std::vector<USER> userList;
-	std::queue<USER> userQueue;
+	std::queue<USER> userQueue; //TODO: change and move this (queue of handles)
 	DWORD maxUsers;
+
+	// Company Manager
+	std::vector<COMPANY> companyList;
 
 	// Shared Memory
 	HANDLE hSharedMemory;
