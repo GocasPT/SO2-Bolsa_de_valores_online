@@ -1,4 +1,6 @@
 ﻿#include "commands.h"
+#include "companyManager.h"
+#include "userManager.h"
 #include <sstream>
 
 void cmd::consoleRoutine(BOLSA& servidor) {
@@ -18,26 +20,25 @@ void cmd::consoleRoutine(BOLSA& servidor) {
 		while (ss >> input)
 			args.push_back(input);
 
-		if (!validateCommand(args)) {
+		if (!validateCommand(servidor, args)) {
 			std::tcout << TAG_WARNING << _T("Comando inválido") << std::endl;
 			continue;
 		}
 	} while (input.compare(CMD_CLOSE));
 }
 
-BOOL cmd::validateCommand(std::vector<std::TSTRING> args) {
+BOOL cmd::validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args) {
 	/*
 	* Comando: Acrescentar uma empresa
 	* Formato: addc <nome-empresa> <número-ações> <preço-ação>
 	*/
 	if (!args[0].compare(CMD_ADDC)) {
 		if (args.size() != 4)
-			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") << 
-				CMD_ADDC << _T(" <nome-empresa> <número-ações> <preço-ação>") << std::endl << std::endl;
+			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
+			CMD_ADDC << _T(" <nome-empresa> <número-ações> <preço-ação>") << std::endl << std::endl;
 
-		else {
-			//TODO: execute command
-		}
+		else
+			CompanyManager::addCompany(servidor, args[1], args[2], args[3]);
 
 		return TRUE;
 	}
@@ -47,13 +48,12 @@ BOOL cmd::validateCommand(std::vector<std::TSTRING> args) {
 	* Formato: listc
 	*/
 	else if (!args[0].compare(CMD_LISTC)) {
-		if (args.size() != 1) 
+		if (args.size() != 1)
 			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
-				CMD_LISTC << std::endl << std::endl;
+			CMD_LISTC << std::endl << std::endl;
 
-		else {
-			//TODO: execute command
-		}
+		else
+			CompanyManager::listCompanies(servidor);
 
 		return TRUE;
 	}
@@ -67,9 +67,8 @@ BOOL cmd::validateCommand(std::vector<std::TSTRING> args) {
 			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 				CMD_STOCK << _T(" <nome-empresa> <preço-ação>") << std::endl << std::endl;
 
-		else {
-			//TODO: execute command
-		}
+		else
+			CompanyManager::updateStock(servidor, args[1], args[2]);
 
 		return TRUE;
 	}
@@ -83,9 +82,9 @@ BOOL cmd::validateCommand(std::vector<std::TSTRING> args) {
 			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 				CMD_USERS << std::endl << std::endl;
 
-		else {
-			//TODO: execute command
-		}
+		else
+			UserManager::listUsers(servidor);
+
 		
 		return TRUE;
 	}
@@ -101,6 +100,7 @@ BOOL cmd::validateCommand(std::vector<std::TSTRING> args) {
 
 		else {
 			//TODO: execute command
+			//TODO: enable flag to pause operations, wait for seconds and disable flag (note: dont enter the cs)
 		}
 		
 		return TRUE;

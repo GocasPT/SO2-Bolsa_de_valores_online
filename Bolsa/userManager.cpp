@@ -32,6 +32,20 @@ void UserManager::removeUser(BOLSA& bolsa, std::TSTRING userName) {
 	}
 }
 
+void UserManager::listUsers(BOLSA& bolsa) {
+	std::tcout << _T("Users:") << std::endl;
+
+	if (bolsa.userList.empty()) {
+		std::tcout << _T("Nenhum cliente") << std::endl;
+		return;
+	}
+
+	for (auto it = bolsa.userList.begin(); it != bolsa.userList.end(); it++)
+		std::tcout << _T("Nome: ") << it->name << _T(" | Saldo: ") << it->balance << _T(" [") << (it->connected ? _T("Online") : _T("Offline")) << _T("]") << std::endl;
+
+	std::tcout << std::endl;
+}
+
 //TODO: check
 USER* UserManager::getUser(BOLSA& bolsa, std::TSTRING userName) {
 	std::vector<USER>& userList = bolsa.userList;

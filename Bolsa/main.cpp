@@ -18,17 +18,6 @@ BOOL checkServerRunning() {
 	}
 }
 
-void configServer(BOLSA &servidor) {
-	std::tcout << TAG_NORMAL << _T("A inicial servidor...") << std::endl << std::endl;
-
-	Files::read_files(servidor);
-	Registry::config(servidor);
-	SharedMemory::config(servidor);
-	NamedPipe::config(servidor);
-
-	//TODO: check if all handlers are not NULL (error code)
-}
-
 void closeServer(BOLSA& servidor) {
 	std::tcout << std::endl <<
 		TAG_NORMAL << _T("A fechar o servidor...") << std::endl << std::endl;
@@ -42,6 +31,23 @@ void closeServer(BOLSA& servidor) {
 	Files::write_files(servidor);
 }
 
+void configServer(BOLSA &servidor) {
+	std::tcout << TAG_NORMAL << _T("A inicial servidor...") << std::endl << std::endl;
+
+	try {
+		Files::read_files(servidor);
+		Registry::config(servidor);
+		SharedMemory::config(servidor);
+		NamedPipe::config(servidor);
+	}
+	catch (std::runtime_error& e) {
+		std::tcout << TAG_ERROR << e.what() << std::endl;
+		closeServer(servidor);
+	}
+
+	//TODO: check if all handlers are not NULL (error code)
+}
+
 int _tmain(int argc, std::TSTRING argv[]) {
 	BOLSA servidor;
 
@@ -52,7 +58,7 @@ int _tmain(int argc, std::TSTRING argv[]) {
 
 	if (checkServerRunning()) {
 		std::tcout << TAG_ERROR << _T("Ja existe uma instancia do programa \'Bolsa\' em execução") << std::endl;
-		exit(1);
+		exit(-1);
 	}
 
 	configServer(servidor);

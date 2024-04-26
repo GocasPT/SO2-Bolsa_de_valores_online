@@ -129,6 +129,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="commands.cpp" />
+    <ClCompile Include="companyManager.cpp" />
     <ClCompile Include="fileManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="namedPipe.cpp" />
@@ -139,6 +140,7 @@
   <ItemGroup>
     <ClInclude Include="bolsa.h" />
     <ClInclude Include="commands.h" />
+    <ClInclude Include="companyManager.h" />
     <ClInclude Include="fileManager.h" />
     <ClInclude Include="namedPipe.h" />
     <ClInclude Include="registry.h" />

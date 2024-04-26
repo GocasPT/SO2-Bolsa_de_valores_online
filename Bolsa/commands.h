@@ -13,7 +13,7 @@
 
 namespace cmd {
 	void consoleRoutine(BOLSA& servidor);
-	BOOL validateCommand(std::vector<std::TSTRING> args);
+	BOOL validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args);
 }
 
 #endif // !COMMANDS_H

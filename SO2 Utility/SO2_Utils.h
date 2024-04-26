@@ -33,6 +33,7 @@ typedef struct {
 	TCHAR password[MAX];
 	float balance;
 	STOCK_WALLET wallet; //TODO: check this
+	bool connected;
 } USER;
 
 typedef struct {
