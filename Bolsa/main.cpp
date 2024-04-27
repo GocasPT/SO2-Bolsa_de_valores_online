@@ -6,15 +6,15 @@
 #include <fcntl.h>
 #include <io.h>
 
-BOOL checkServerRunning() {
+bool checkServerRunning() {
 	HANDLE hPipeTest = CreateNamedPipe(PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, PIPE_TIMEOUT, NULL);
 	if (GetLastError() == ERROR_ALREADY_EXISTS) {
 		CloseHandle(hPipeTest);
-		return TRUE;
+		return true;
 	}
 	else {
 		CloseHandle(hPipeTest);
-		return FALSE;
+		return false;
 	}
 }
 
@@ -23,8 +23,6 @@ void closeServer(BOLSA& servidor) {
 		TAG_NORMAL << _T("A fechar o servidor...") << std::endl << std::endl;
 
 	servidor.tData.isRunning = FALSE;
-
-	WaitForMultipleObjects(1, &servidor.hReciverThread, TRUE, INFINITE); //TODO: check if is this argument is correct
 
 	SharedMemory::close(servidor);
 	NamedPipe::close(servidor);

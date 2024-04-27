@@ -1,6 +1,6 @@
 ﻿#include "UI.h"
 
-BOOL validateCommand(const TSTRING &input) {
+BOOL validateCommand(const std::TSTRING &input) {
 	return FALSE;
 }
 

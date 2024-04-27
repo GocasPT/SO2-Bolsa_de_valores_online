@@ -11,7 +11,8 @@
 #define TAG_WARNING _T("[WARNING] ")
 
 typedef struct {
-	BOOL isRunning;
+	bool isRunning;
+	HANDLE hPipe;
 	std::vector<USER>* userList;
 	std::queue<USER>* userQueue;
 	DWORD maxUsers;

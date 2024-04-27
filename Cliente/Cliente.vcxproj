@@ -133,6 +133,7 @@
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cliente.h" />
     <ClInclude Include="named pipe.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>

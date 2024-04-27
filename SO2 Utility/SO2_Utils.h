@@ -48,13 +48,7 @@ typedef struct {
 } SHARED_MEMORY;
 
 typedef struct {
-	//TODO
-	TCHAR name[MAX];
-} REQUEST_COMMAND;
-
-typedef struct {
-	//TODO
-	TCHAR message[MAX];
-} FEEDBACK_SERVER;
+	TCHAR data[MAX];
+} MESSAGE;
 
 #endif // !SO2_UTILS_H

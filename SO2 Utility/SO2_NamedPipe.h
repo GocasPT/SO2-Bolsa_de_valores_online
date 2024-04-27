@@ -4,6 +4,7 @@
 
 #include <tchar.h>
 
+#define PIPE_TIMEOUT 1000
 #define PIPE_BOLSA_NAME _T("\\\\.\\pipe\\bolsa")
 
 #endif // !SO2_NAMED_PIPE_H

@@ -2,8 +2,13 @@
 #include <algorithm>
 
 //TODO: check
-BOOL UserManager::validateUser(USER user) {
-	return true;
+BOOL UserManager::validateUser(BOLSA& servidor, USER user) {
+	auto it = std::find_if(servidor.userList.begin(), servidor.userList.end(),
+		[user](USER u) { return u.name == user.name && u.password == user.password; });
+	if (it == servidor.userList.end())
+		return false;
+	else
+		return true;
 }
 
 //TODO: check
@@ -22,7 +27,8 @@ void UserManager::removeUser(BOLSA& bolsa, std::TSTRING userName) {
 	std::vector<USER>& userList = bolsa.userList;
 	std::queue<USER>& userQueue = bolsa.userQueue;
 
-	auto it = std::find_if(userList.begin(), userList.end(), [userName](USER user) { return user.name == userName; });
+	auto it = std::find_if(userList.begin(), userList.end(),
+		[userName](USER user) { return user.name == userName; });
 	if (it != userList.end())
 		userList.erase(it);
 
@@ -41,7 +47,10 @@ void UserManager::listUsers(BOLSA& bolsa) {
 	}
 
 	for (auto it = bolsa.userList.begin(); it != bolsa.userList.end(); it++)
-		std::tcout << _T("Nome: ") << it->name << _T(" | Saldo: ") << it->balance << _T(" [") << (it->connected ? _T("Online") : _T("Offline")) << _T("]") << std::endl;
+		std::tcout << _T("Nome: ") << it->name <<
+			_T(" | Saldo: ") << it->balance <<
+			_T(" [") << (it->connected ? _T("Online") : _T("Offline")) << _T("]")
+			<< std::endl;
 
 	std::tcout << std::endl;
 }
@@ -50,7 +59,8 @@ void UserManager::listUsers(BOLSA& bolsa) {
 USER* UserManager::getUser(BOLSA& bolsa, std::TSTRING userName) {
 	std::vector<USER>& userList = bolsa.userList;
 
-	auto it = std::find_if(userList.begin(), userList.end(), [userName](USER user) { return user.name == userName; });
+	auto it = std::find_if(userList.begin(), userList.end(),
+		[userName](USER user) { return user.name == userName; });
 	if (it != userList.end())
 		return &(*it);
 	else
