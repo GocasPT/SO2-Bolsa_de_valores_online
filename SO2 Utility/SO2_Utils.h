@@ -48,6 +48,7 @@ typedef struct {
 } SHARED_MEMORY;
 
 typedef struct {
+	DWORD code;
 	TCHAR data[MAX];
 } MESSAGE;
 

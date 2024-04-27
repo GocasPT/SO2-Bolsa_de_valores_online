@@ -15,6 +15,8 @@ typedef struct {
 	HANDLE hPipe;
 	std::vector<USER>* userList;
 	std::queue<USER>* userQueue;
+	std::vector<HANDLE>* hUsersThreadList;
+	std::vector<HANDLE>* hUsersPipesList;
 	DWORD maxUsers;
 	CRITICAL_SECTION* cs;
 } TDATA;

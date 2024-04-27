@@ -9,13 +9,14 @@
 #define TAG_WARNING _T("[WARNING] ")
 
 typedef struct {
+	bool logged;
 	TCHAR name[MAX];
 	TCHAR password[MAX];
-	float balance;
+	float balance; //TODO: maybe remove this (just request to server)
 	HANDLE hPipe;
 	DWORD pipeMode;
 	HANDLE hThread;
-	bool tContinue;
+	bool tContinue; //TODO: change name
 } CLIENTE;
 
 #endif // !CLIENTE_H

@@ -130,12 +130,12 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="named pipe.cpp" />
-    <ClCompile Include="UI.cpp" />
+    <ClCompile Include="commands.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cliente.h" />
     <ClInclude Include="named pipe.h" />
-    <ClInclude Include="UI.h" />
+    <ClInclude Include="commands.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -21,7 +21,7 @@
     <ClCompile Include="named pipe.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UI.cpp">
+    <ClCompile Include="commands.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClInclude Include="named pipe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UI.h">
+    <ClInclude Include="commands.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cliente.h">

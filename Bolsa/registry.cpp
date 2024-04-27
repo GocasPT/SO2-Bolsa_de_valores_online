@@ -7,7 +7,7 @@ void Registry::config(BOLSA& servidor) {
 	  - if not exist, create registry with default value and set it
 	*/
 
-	servidor.tData = { TRUE, servidor.hPipe, &servidor.userList, &servidor.userQueue, 10 }; //TODO: change '10' to the read value or default value
+	servidor.maxUsers = 10; //TODO: change '10' to correct value
 
 	std::tcout << TAG_NORMAL << _T("Dados lidos com sucesso") << std::endl << std::endl;
 }

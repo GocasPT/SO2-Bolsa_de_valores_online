@@ -14,7 +14,7 @@ void NamedPipe::config(BOLSA& servidor) {
 
 	InitializeCriticalSection(&servidor.cs);
 
-	servidor.tData = { true, servidor.hPipe, &servidor.userList, &servidor.userQueue, 10, &servidor.cs };
+	servidor.tData = { true, servidor.hPipe, &servidor.userList, &servidor.userQueue, &servidor.hUsersThreadList, &servidor.hUsersPipesList, 10, &servidor.cs }; //TODO: change '10' to correct value
 
 	servidor.hReciverThread = CreateThread(NULL, 0, reciverRoutine, &servidor.tData, 0, NULL);
 	if (servidor.hReciverThread == NULL) {
@@ -34,7 +34,7 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 	*/
 
 	TDATA *data = (TDATA*)lpParam;
-	BOOL fConnected = FALSE;
+	bool fConnected = FALSE;
 
 	while (data->isRunning) {
 	
@@ -46,15 +46,47 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 		  - exit critical section
 		*/
 
-		fConnected = ConnectNamedPipe(data->hPipe, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
+		fConnected = ConnectNamedPipe(data->hPipe, NULL) ? true : (GetLastError() == ERROR_PIPE_CONNECTED);
 		if (!fConnected) {
 			std::tcout << TAG_ERROR << _T("Erro ao conectar o cliente ao named pipe do servidor (") << GetLastError() << _T(")") << std::endl;
 			data->isRunning = FALSE;
 			continue;
 		}
 
-		std::tcout << TAG_NORMAL << _T("Cliente conectado ao named pipe do servidor") << std::endl;
+		std::tcout << std::endl << TAG_NORMAL << _T("Cliente conectado ao named pipe do servidor") << std::endl;
+
+		/*TODO
+		  - creathe thread to handle client
+		*/
+		data->hUsersPipesList->push_back(data->hPipe);
+
+		std::tcout << _T("Criando thread para comunicação com o cliente...") << std::endl;
+		HANDLE newUserThread = CreateThread(NULL, 0, userRoutine, data->hPipe, 0, NULL); //TODO: check if the param is correct
+		if (newUserThread == NULL) {
+			std::tcout << TAG_ERROR << _T("Erro ao criar a thread para o cliente (") << GetLastError() << _T(")") << std::endl;
+			data->isRunning = FALSE;
+			continue;
+		}
+
+		data->hUsersThreadList->push_back(newUserThread);
+		
+		std::tcout << _T("Criando novo pipe para receber novo cliente...") << std::endl;
+		data->hPipe = CreateNamedPipe(PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, sizeof(MESSAGE), sizeof(MESSAGE), PIPE_TIMEOUT, NULL);
 	}
+
+	return 0;
+}
+
+DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
+	/*TODO
+	  - cast lpParam
+	  - loop to recive messages
+	  - entre critical section, get/set data (copy/modify), leave critical section
+	  - send message
+	  - close pipe [?]
+	*/
+
+	std::tcout << _T("Thread do cliente criada com sucesso") << std::endl;
 
 	return 0;
 }
@@ -75,6 +107,17 @@ void NamedPipe::close(BOLSA& servidor) {
 	for (HANDLE hThread : servidor.hUsersThreadList)
 		WaitForSingleObject(hThread, INFINITE); //TODO: maybe change to WaitForMultipleObjects
 	WaitForSingleObject(servidor.hReciverThread, INFINITE);
+
+	//TODO: maybe show user info in same time
+	for (DWORD i = 0; i < servidor.hUsersPipesList.size(); i++) {
+		std::tcout << _T("A fecher o pipe do cliente ") << i << _T(" de ") << servidor.hUsersPipesList.size() << std::endl;
+		if (!DisconnectNamedPipe(servidor.hUsersPipesList[i])) {
+			std::tcout << TAG_ERROR << _T("Erro ao fechar o pipe do cliente ") << i << _T(" (") << GetLastError() << _T(")") << std::endl;
+		}
+
+		CloseHandle(servidor.hUsersThreadList[i]);
+		CloseHandle(servidor.hUsersPipesList[i]);
+	}
 
 	CloseHandle(servidor.hReciverThread);
 	DeleteCriticalSection(&servidor.cs);

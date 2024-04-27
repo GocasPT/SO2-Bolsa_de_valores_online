@@ -1,7 +1,7 @@
 #include "SO2_Utils.h"
 #include "named pipe.h"
 #include "cliente.h"
-#include "UI.h"
+#include "commands.h"
 #include <fcntl.h>
 #include <io.h>
 
@@ -33,14 +33,12 @@ int _tmain(int argc, std::TSTRING argv[]) {
 		exit(-1);
 	}
 
-	std::tcout << TAG_NORMAL << TEXT("Introduz as credenciais...") << std::endl;
-	std::tcout << TAG_INPUT << TEXT("Nome: ");
-	std::tcin >> currentUser.name;
-	std::tcout << TAG_INPUT << TEXT("Password: ");
-	std::tcin >> currentUser.password;
+	currentUser.logged = false;
+	std::tcout << TAG_NORMAL << TEXT("Executa o comando \'") << CMD_LOGIN << _T("\' para puder ligar ao servidor") << std::endl;
 
-	NamedPipe::connectToServer(currentUser);
-	NamedPipe::send(currentUser, TEXT("Hello from client"));
+	cmd::consoleRoutine(currentUser);
+
+	//TODO: close all handlers, pipe, threads, etc
 
 	return 0;
 }

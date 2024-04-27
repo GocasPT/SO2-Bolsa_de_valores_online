@@ -9,6 +9,7 @@ namespace NamedPipe {
 	//TODO: Functions for named  pipe (server-side)
 	void config(BOLSA& servidor);
 	DWORD WINAPI reciverRoutine(LPVOID lpParam);
+	DWORD WINAPI userRoutine(LPVOID lpParam);
 	void send(BOLSA& servidor, std::TSTRING msg);
 	void close(BOLSA& servidor);
 }

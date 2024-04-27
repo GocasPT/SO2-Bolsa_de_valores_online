@@ -24,6 +24,11 @@ void closeServer(BOLSA& servidor) {
 
 	servidor.tData.isRunning = FALSE;
 
+	//TODO: PLACEHOLDER
+	HANDLE hTemp = CreateFile(PIPE_BOLSA_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	CloseHandle(hTemp);
+	//TODO: PLACEHOLDER
+
 	SharedMemory::close(servidor);
 	NamedPipe::close(servidor);
 	Files::write_files(servidor);
