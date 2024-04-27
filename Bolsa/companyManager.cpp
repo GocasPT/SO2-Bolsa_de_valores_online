@@ -8,7 +8,7 @@ void CompanyManager::addCompany(BOLSA& servidor, std::TSTRING name, std::TSTRING
 		return;
 	}
 
-	std::wstringstream ss; //TODO: change to macro (tstringstream → wstringstream or stringstream)
+	std::_tstringstream ss; //TODO: change to macro (tstringstream → wstringstream or stringstream)
 	ss << numOfStock << " " << pricePerStock;
 
 	DWORD numStocks;

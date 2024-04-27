@@ -8,7 +8,7 @@ void NamedPipe::config(BOLSA& servidor) {
 	servidor.hPipe = CreateNamedPipe(PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, sizeof(MESSAGE), sizeof(MESSAGE), PIPE_TIMEOUT, NULL);
 	if (servidor.hPipe == INVALID_HANDLE_VALUE) {
 		std::stringstream ss;
-		ss << _T("Criação do named pipe do servidor (") << GetLastError() << _T(")");
+		ss << "Criacao do named pipe do servidor (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
 	}
 
@@ -19,7 +19,7 @@ void NamedPipe::config(BOLSA& servidor) {
 	servidor.hReciverThread = CreateThread(NULL, 0, reciverRoutine, &servidor.tData, 0, NULL);
 	if (servidor.hReciverThread == NULL) {
 		std::stringstream ss;
-		ss << _T("Erro ao criar a thread para receber clientes (") << GetLastError() << _T(")");
+		ss << "Erro ao criar a thread para receber clientes (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
 	}
 

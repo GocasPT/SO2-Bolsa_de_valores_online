@@ -10,14 +10,14 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 	user.hPipe = CreateFile(PIPE_BOLSA_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 	if (user.hPipe == INVALID_HANDLE_VALUE) {
 		std::stringstream ss;
-		ss << _T("Erro ao conectar ao servidor (") << GetLastError() << _T(")");
+		ss << "Erro ao conectar ao servidor (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
 	}
 
 	//TODO: Check if this block is necessary
 	else if (GetLastError() == ERROR_PIPE_BUSY) {
 		std::stringstream ss;
-		ss << _T("Servidor ocupado (") << GetLastError() << _T(")");
+		ss << "Servidor ocupado (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
 	}
 
@@ -26,7 +26,7 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 		user.pipeMode = PIPE_READMODE_MESSAGE;
 		if (!SetNamedPipeHandleState(user.hPipe, &user.pipeMode, NULL, NULL)) {
 			std::stringstream ss;
-			ss << _T("Erro ao configurar o modo do named pipe (") << GetLastError() << _T(")");
+			ss << "Erro ao configurar o modo do named pipe (" << GetLastError() << ")";
 			throw std::runtime_error(ss.str());
 		}
 		else {
@@ -37,7 +37,7 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 	user.hThread = CreateThread(NULL, 0, reciverMessage, &user, 0, NULL); //TODO: Check parameter pointer
 	if (user.hThread == NULL) {
 		std::stringstream ss;
-		ss << _T("Erro ao criar a thread (") << GetLastError() << _T(")");
+		ss << "Erro ao criar a thread (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
 	}
 	else {
@@ -75,7 +75,7 @@ void NamedPipe::send(CLIENTE& user, MESSAGE msg) {
 
 	if (!WriteFile(user.hPipe, &msg, sizeof(MESSAGE) * sizeof(TCHAR), &dwWrite, NULL)) {
 		std::stringstream ss;
-		ss << _T("Erro ao enviar a mensagem (") << GetLastError() << _T(")");
+		ss << "Erro ao enviar a mensagem (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
 	}
 	else {

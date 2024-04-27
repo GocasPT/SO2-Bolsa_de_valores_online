@@ -101,7 +101,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 void cmd::consoleRoutine(CLIENTE& user) {
 	std::TSTRING input;
 	std::vector<std::TSTRING> args;
-	std::wstringstream ss; //TODO: change to macro (tstringstream → wstringstream or stringstream)
+	std::_tstringstream ss;
 
 	//TODO: change this for flag (any error, break loop → for safe) 
 	do {

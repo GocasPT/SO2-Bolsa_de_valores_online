@@ -7,14 +7,13 @@
 void Files::read_files(BOLSA& servidor) {
 	std::_tcout << _T("A ler ficheiros... (0/") << TOTAL_FILES << _T(")") << std::endl;
 
-	//TODO: check ATL and MFC libraries (TCHAR aleternaty)
-	std::ifstream file;
-	std::string line;
-	std::stringstream ss;
+	std::_tifstream file;
+	std::TSTRING line;
+	std::_tstringstream ss;
 
 	file.open(FILE_USERS);
 	if (file.is_open()) {
-		std::string name, password;
+		std::TSTRING name, password;
 		float balance;
 
 		//TODO: read file
@@ -23,8 +22,8 @@ void Files::read_files(BOLSA& servidor) {
 			ss >> name >> password >> balance;
 
 			USER user;
-			_tcscpy_s(user.name, CA2T(name.c_str()));
-			_tcscpy_s(user.password, CA2T(password.c_str()));
+			_tcscpy_s(user.name, name.c_str());
+			_tcscpy_s(user.password, password.c_str());
 			user.balance = balance;
 			user.connected = false;
 
@@ -35,7 +34,7 @@ void Files::read_files(BOLSA& servidor) {
 	}
 	else {
 		std::stringstream ss;
-		ss << _T("Erro ao abrir o ficeiro '") << FILE_USERS << _T("'");
+		ss << "Erro ao abrir o ficeiro '" << FILE_USERS << "'";
 		throw std::runtime_error(ss.str());
 	}
 	
@@ -43,7 +42,7 @@ void Files::read_files(BOLSA& servidor) {
 
 	file.open(FILE_COMPANIES);
 	if (file.is_open()) {
-		std::string name;
+		std::TSTRING name;
 		int numFreeStocks;
 		float pricePerStock;
 
@@ -52,7 +51,7 @@ void Files::read_files(BOLSA& servidor) {
 			ss >> name >> numFreeStocks >> pricePerStock;
 
 			COMPANY company;
-			_tcscpy_s(company.name, CA2T(name.c_str()));
+			_tcscpy_s(company.name, name.c_str());
 			company.numFreeStocks = numFreeStocks;
 			company.pricePerStock = pricePerStock;
 
@@ -63,7 +62,7 @@ void Files::read_files(BOLSA& servidor) {
 	}
 	else {
 		std::stringstream ss;
-		ss << _T("Erro ao abrir o ficeiro '") << FILE_COMPANIES << _T("'");
+		ss << "Erro ao abrir o ficeiro '" << FILE_COMPANIES << "'";
 		throw std::runtime_error(ss.str());
 	}
 	std::_tcout << _T("Ficheiro '") << FILE_COMPANIES << _T("' lido com sucesso (2/") << TOTAL_FILES << _T(")") << std::endl;
