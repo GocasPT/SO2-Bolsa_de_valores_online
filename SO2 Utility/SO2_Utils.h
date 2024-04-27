@@ -5,18 +5,19 @@
 #include <windows.h>
 #include <tchar.h>
 #include <string>
+#include <sstream>
 #include <iostream>
 
 #ifdef UNICODE
-	#define tcout wcout
-	#define tcin wcin
 	#define TSTRING wstring
-	#define _tmain wmain
+	#define _tcout wcout
+	#define _tcin wcin
+	#define _tstringstream wstringstream
 #else
-	#define tcout std::cout
-	#define tcin std::cin
+	#define _tcout std::cout
+	#define _tcin std::cin
 	#define TSTRING std::string
-	#define _tmain main
+	#define _tstringstream std::stringstream
 #endif
 
 #define MAX 256

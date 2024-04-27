@@ -19,7 +19,7 @@ bool checkServerRunning() {
 }
 
 void closeServer(BOLSA& servidor) {
-	std::tcout << std::endl <<
+	std::_tcout << std::endl <<
 		TAG_NORMAL << _T("A fechar o servidor...") << std::endl << std::endl;
 
 	servidor.tData.isRunning = FALSE;
@@ -35,7 +35,7 @@ void closeServer(BOLSA& servidor) {
 }
 
 void configServer(BOLSA &servidor) {
-	std::tcout << TAG_NORMAL << _T("A inicial servidor...") << std::endl << std::endl;
+	std::_tcout << TAG_NORMAL << _T("A inicial servidor...") << std::endl << std::endl;
 
 	try {
 		Files::read_files(servidor);
@@ -44,7 +44,7 @@ void configServer(BOLSA &servidor) {
 		NamedPipe::config(servidor);
 	}
 	catch (std::runtime_error& e) {
-		std::tcout << TAG_ERROR << e.what() << std::endl;
+		std::_tcout << TAG_ERROR << e.what() << std::endl;
 		closeServer(servidor);
 	}
 
@@ -60,7 +60,7 @@ int _tmain(int argc, std::TSTRING argv[]) {
 #endif 
 
 	if (checkServerRunning()) {
-		std::tcout << TAG_ERROR << _T("Ja existe uma instancia do programa \'Bolsa\' em execução") << std::endl;
+		std::_tcout << TAG_ERROR << _T("Ja existe uma instancia do programa \'Bolsa\' em execução") << std::endl;
 		exit(-1);
 	}
 

@@ -9,7 +9,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	*/
 	if (!args[0].compare(CMD_LOGIN)) {
 		if (args.size() != 3)
-			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
+			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 			CMD_LOGIN << _T(" <username> <password>") << std::endl << std::endl;
 
 		else
@@ -19,7 +19,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	}
 
 	else if (!userData.logged) {
-		std::tcout << TAG_WARNING << _T("Efetua o login primeiro") << std::endl;
+		std::_tcout << TAG_WARNING << _T("Efetua o login primeiro") << std::endl;
 		return true;
 	}
 
@@ -29,7 +29,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	*/
 	else if (!args[0].compare(CMD_LISTC)) {
 		if (args.size() != 1)
-			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
+			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 			CMD_LISTC << std::endl << std::endl;
 
 		else
@@ -44,7 +44,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	*/
 	else if (!args[0].compare(CMD_BUY)) {
 		if (args.size() != 3)
-			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
+			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 			CMD_BUY << _T(" <nome-empresa> <número-ações>") << std::endl << std::endl;
 
 		else
@@ -59,7 +59,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	*/
 	else if (!args[0].compare(CMD_SELL)) {
 		if (args.size() != 3)
-			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
+			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 			CMD_SELL << _T(" <nome-empresa> <número-ações>") << std::endl << std::endl;
 
 		else
@@ -74,7 +74,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	*/
 	else if (!args[0].compare(CMD_BALANCE)) {
 		if (args.size() != 1)
-			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
+			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 			CMD_BALANCE << std::endl << std::endl;
 
 		else
@@ -89,7 +89,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	*/
 	else if (!args[0].compare(CMD_EXIT)) {
 		if (args.size() != 1)
-			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
+			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 			CMD_EXIT << std::endl << std::endl;
 
 			return true;
@@ -108,15 +108,15 @@ void cmd::consoleRoutine(CLIENTE& user) {
 		args.clear();
 		ss.clear();
 
-		std::tcout << _T(">> ");
-		std::getline(std::tcin, input);
+		std::_tcout << _T(">> ");
+		std::getline(std::_tcin, input);
 
 		ss << input;
 		while (ss >> input)
 			args.push_back(input);
 
 		if (!validateCommand(user, args)) {
-			std::tcout << TAG_WARNING << _T("Comando inválido") << std::endl;
+			std::_tcout << TAG_WARNING << _T("Comando inválido") << std::endl;
 			continue;
 		}
 	} while (input.compare(CMD_EXIT));

@@ -5,7 +5,7 @@
 #include <atlstr.h>
 
 void Files::read_files(BOLSA& servidor) {
-	std::tcout << _T("A ler ficheiros... (0/") << TOTAL_FILES << _T(")") << std::endl;
+	std::_tcout << _T("A ler ficheiros... (0/") << TOTAL_FILES << _T(")") << std::endl;
 
 	//TODO: check ATL and MFC libraries (TCHAR aleternaty)
 	std::ifstream file;
@@ -39,7 +39,7 @@ void Files::read_files(BOLSA& servidor) {
 		throw std::runtime_error(ss.str());
 	}
 	
-	std::tcout << _T("Ficheiro '") << FILE_USERS << _T("' lido com sucesso (1/") << TOTAL_FILES << _T(")") << std::endl;
+	std::_tcout << _T("Ficheiro '") << FILE_USERS << _T("' lido com sucesso (1/") << TOTAL_FILES << _T(")") << std::endl;
 
 	file.open(FILE_COMPANIES);
 	if (file.is_open()) {
@@ -66,20 +66,20 @@ void Files::read_files(BOLSA& servidor) {
 		ss << _T("Erro ao abrir o ficeiro '") << FILE_COMPANIES << _T("'");
 		throw std::runtime_error(ss.str());
 	}
-	std::tcout << _T("Ficheiro '") << FILE_COMPANIES << _T("' lido com sucesso (2/") << TOTAL_FILES << _T(")") << std::endl;
+	std::_tcout << _T("Ficheiro '") << FILE_COMPANIES << _T("' lido com sucesso (2/") << TOTAL_FILES << _T(")") << std::endl;
 
 	//TODO: maybe add more files to read
 
-	std::tcout << TAG_NORMAL << _T("Ficheiros lidos com sucesso") << std::endl << std::endl;
+	std::_tcout << TAG_NORMAL << _T("Ficheiros lidos com sucesso") << std::endl << std::endl;
 }
 
 void Files::write_files(BOLSA& servidor) {
-	std::tcout << _T("A salvar dados no ficheiros... (0/") << TOTAL_FILES << _T(")") << std::endl;
+	std::_tcout << _T("A salvar dados no ficheiros... (0/") << TOTAL_FILES << _T(")") << std::endl;
 
 	/*TODO:
 	  - get data from servidor.users and write in FILE_USERS
 	  - get data from servidor.companies and write in FILE_COMPANIES
 	*/
 
-	std::tcout << TAG_NORMAL << _T("Dados salvos no ficheiroscom sucesso") << std::endl << std::endl;
+	std::_tcout << TAG_NORMAL << _T("Dados salvos no ficheiroscom sucesso") << std::endl << std::endl;
 }

@@ -25,16 +25,16 @@ int _tmain(int argc, std::TSTRING argv[]) {
 	_setmode(_fileno(stdout), _O_WTEXT);
 #endif 
 
-	std::tcout << TEXT("Sou o programa \'Cliente\'") << std::endl;
-	std::tcin;
+	std::_tcout << TEXT("Sou o programa \'Cliente\'") << std::endl;
+	std::_tcin;
 
 	if (!checkServerIsRunnig()) {
-		std::tcout << TAG_ERROR << TEXT("O servidor não está a correr") << std::endl;
+		std::_tcout << TAG_ERROR << TEXT("O servidor não está a correr") << std::endl;
 		exit(-1);
 	}
 
 	currentUser.logged = false;
-	std::tcout << TAG_NORMAL << TEXT("Executa o comando \'") << CMD_LOGIN << _T("\' para puder ligar ao servidor") << std::endl;
+	std::_tcout << TAG_NORMAL << TEXT("Executa o comando \'") << CMD_LOGIN << _T("\' para puder ligar ao servidor") << std::endl;
 
 	cmd::consoleRoutine(currentUser);
 

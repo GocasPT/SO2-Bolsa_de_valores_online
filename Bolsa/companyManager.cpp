@@ -4,7 +4,7 @@
 //TODO: check
 void CompanyManager::addCompany(BOLSA& servidor, std::TSTRING name, std::TSTRING numOfStock, std::TSTRING pricePerStock) {
 	if (getCompany(servidor, name) != nullptr) {
-		std::tcout << TAG_WARNING << _T("Empresa já existe") << std::endl;
+		std::_tcout << TAG_WARNING << _T("Empresa já existe") << std::endl;
 		return;
 	}
 
@@ -22,22 +22,22 @@ void CompanyManager::addCompany(BOLSA& servidor, std::TSTRING name, std::TSTRING
 
 	servidor.companyList.push_back(company);
 
-	std::tcout << TAG_NORMAL << _T("Empresa adicionada com sucesso") << std::endl <<
+	std::_tcout << TAG_NORMAL << _T("Empresa adicionada com sucesso") << std::endl <<
 		_T("Nome: ") << name << _T(" | Nº de Ações: ") << numStocks << _T(" | Preço por Ação: ") << priceStock << std::endl << std::endl;
 }
 
 void CompanyManager::listCompanies(BOLSA& servidor) {
-	std::tcout << TAG_NORMAL << _T("Listagem de Empresas:") << std::endl;
+	std::_tcout << TAG_NORMAL << _T("Listagem de Empresas:") << std::endl;
 	
 	if (servidor.companyList.empty()) {
-		std::tcout << _T("Nenhuma empresa") << std::endl;
+		std::_tcout << _T("Nenhuma empresa") << std::endl;
 		return;
 	}
 
 	for(auto it = servidor.companyList.begin(); it != servidor.companyList.end(); it++)
-		std::tcout << _T("Nome: ") << it->name << _T(" | Nº de Ações: ") << it->numFreeStocks << _T(" | Preço por Ação: ") << it->pricePerStock << std::endl;
+		std::_tcout << _T("Nome: ") << it->name << _T(" | Nº de Ações: ") << it->numFreeStocks << _T(" | Preço por Ação: ") << it->pricePerStock << std::endl;
 
-	std::tcout << std::endl;
+	std::_tcout << std::endl;
 }
 
 COMPANY* CompanyManager::getCompany(BOLSA& servidor, std::TSTRING name) {

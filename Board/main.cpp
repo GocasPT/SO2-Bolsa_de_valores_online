@@ -12,8 +12,8 @@ int _tmain(int argc, std::TSTRING argv[]) {
 	_setmode(_fileno(stdout), _O_WTEXT);
 #endif 
 
-	std::tcout << TEXT("Sou o programa \'Board\'") << std::endl;
-	std::tcin;
+	std::_tcout << TEXT("Sou o programa \'Board\'") << std::endl;
+	std::_tcin;
 
 	return 0;
 }

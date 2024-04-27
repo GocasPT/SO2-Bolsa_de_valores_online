@@ -22,7 +22,7 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 	}
 
 	else {
-		std::tcout << TAG_NORMAL << TEXT("Conectado ao servidor") << std::endl;
+		std::_tcout << TAG_NORMAL << TEXT("Conectado ao servidor") << std::endl;
 		user.pipeMode = PIPE_READMODE_MESSAGE;
 		if (!SetNamedPipeHandleState(user.hPipe, &user.pipeMode, NULL, NULL)) {
 			std::stringstream ss;
@@ -30,7 +30,7 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 			throw std::runtime_error(ss.str());
 		}
 		else {
-			std::tcout << TAG_NORMAL << TEXT("Modo configurado") << std::endl;
+			std::_tcout << TAG_NORMAL << TEXT("Modo configurado") << std::endl;
 		}
 	}
 
@@ -41,7 +41,7 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 		throw std::runtime_error(ss.str());
 	}
 	else {
-		std::tcout << TAG_NORMAL << TEXT("Thread criada") << std::endl;
+		std::_tcout << TAG_NORMAL << TEXT("Thread criada") << std::endl;
 	}
 }
 
@@ -59,11 +59,11 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 		MESSAGE msg;
 
 		if (!ReadFile(user->hPipe, &msg, sizeof(MESSAGE) * sizeof(TCHAR), &dwRead, NULL)) {
-			std::tcout << TAG_ERROR << TEXT("Erro ao ler a mensagem") << std::endl;
+			std::_tcout << TAG_ERROR << TEXT("Erro ao ler a mensagem") << std::endl;
 			return -1;
 		}
 		else {
-			std::tcout << TAG_NORMAL << TEXT("Mensagem recebida: ") << msg.data << std::endl;
+			std::_tcout << TAG_NORMAL << TEXT("Mensagem recebida: ") << msg.data << std::endl;
 		}
 	}
 
@@ -79,7 +79,7 @@ void NamedPipe::send(CLIENTE& user, MESSAGE msg) {
 		throw std::runtime_error(ss.str());
 	}
 	else {
-		std::tcout << TAG_NORMAL << TEXT("Mensagem enviada") << std::endl;
+		std::_tcout << TAG_NORMAL << TEXT("Mensagem enviada") << std::endl;
 	}
 }
 
@@ -98,11 +98,11 @@ void NamedPipe::requestLogin(CLIENTE& user, std::TSTRING name, std::TSTRING pass
 		_tcscpy_s(msg.data, name.c_str());
 
 		//TODO: PLACEHOLDER
-		std::tcout << TAG_NORMAL << TEXT("Enviando mensagem: ") << msg.data << std::endl;
+		std::_tcout << TAG_NORMAL << TEXT("Enviando mensagem: ") << msg.data << std::endl;
 
 		send(user, msg);
 	} catch (std::runtime_error& e) {
-		std::tcout << TAG_ERROR << e.what() << std::endl;
+		std::_tcout << TAG_ERROR << e.what() << std::endl;
 	}
 }
 
@@ -117,7 +117,7 @@ void NamedPipe::requestList(CLIENTE& user) {
 
 		send(user, msg);
 	} catch (std::runtime_error& e) {
-		std::tcout << TAG_ERROR << e.what() << std::endl;
+		std::_tcout << TAG_ERROR << e.what() << std::endl;
 	}
 }
 
@@ -135,7 +135,7 @@ void NamedPipe::requestBuy(CLIENTE& user, std::TSTRING company, DWORD numOfStock
 
 		send(user, msg);
 	} catch (std::runtime_error& e) {
-		std::tcout << TAG_ERROR << e.what() << std::endl;
+		std::_tcout << TAG_ERROR << e.what() << std::endl;
 	}
 }
 
@@ -153,7 +153,7 @@ void NamedPipe::requestSell(CLIENTE& user, std::TSTRING company, DWORD numOfStoc
 
 		send(user, msg);
 	} catch (std::runtime_error& e) {
-		std::tcout << TAG_ERROR << e.what() << std::endl;
+		std::_tcout << TAG_ERROR << e.what() << std::endl;
 	}
 }
 
@@ -168,7 +168,7 @@ void NamedPipe::requestBalance(CLIENTE& user) {
 
 		send(user, msg);
 	} catch (std::runtime_error& e) {
-		std::tcout << TAG_ERROR << e.what() << std::endl;
+		std::_tcout << TAG_ERROR << e.what() << std::endl;
 	}
 }
 

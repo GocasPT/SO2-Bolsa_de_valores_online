@@ -1,7 +1,7 @@
 #include "sharedMemory.h"
 
 void SharedMemory::config(BOLSA& servidor) {
-	std::tcout << _T("A configurar a memória partilhada para mandar aos board(GUI)s...") << std::endl;
+	std::_tcout << _T("A configurar a memória partilhada para mandar aos board(GUI)s...") << std::endl;
 
 	/*TODO:
 	  - create shared memory
@@ -9,7 +9,7 @@ void SharedMemory::config(BOLSA& servidor) {
 	  - set up event
 	*/
 
-	std::tcout << TAG_NORMAL << _T("Configuração da memória partillhada conculida, disponível para os programas board(GUI)s conectarem-se") << std::endl << std::endl;
+	std::_tcout << TAG_NORMAL << _T("Configuração da memória partillhada conculida, disponível para os programas board(GUI)s conectarem-se") << std::endl << std::endl;
 }
 
 void SharedMemory::update(BOLSA &servidor) {
@@ -21,12 +21,12 @@ void SharedMemory::update(BOLSA &servidor) {
 }
 
 void SharedMemory::close(BOLSA& servidor) {
-	std::tcout << _T("A fechar a memória partilhada...") << std::endl;
+	std::_tcout << _T("A fechar a memória partilhada...") << std::endl;
 
 	/*TODO:
 	  - close handler
 	  - close event
 	*/
 
-	std::tcout << TAG_NORMAL << _T("Memória partilhada fechado com sucesso") << std::endl << std::endl;
+	std::_tcout << TAG_NORMAL << _T("Memória partilhada fechado com sucesso") << std::endl << std::endl;
 }

@@ -13,15 +13,15 @@ void cmd::consoleRoutine(BOLSA& servidor) {
 		args.clear();
 		ss.clear();
 
-		std::tcout << _T(">> ");
-		std::getline(std::tcin, input);
+		std::_tcout << _T(">> ");
+		std::getline(std::_tcin, input);
 
 		ss << input;
 		while (ss >> input)
 			args.push_back(input);
 
 		if (!validateCommand(servidor, args)) {
-			std::tcout << TAG_WARNING << _T("Comando inválido") << std::endl;
+			std::_tcout << TAG_WARNING << _T("Comando inválido") << std::endl;
 			continue;
 		}
 	} while (input.compare(CMD_CLOSE));
@@ -34,7 +34,7 @@ BOOL cmd::validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args) {
 	*/
 	if (!args[0].compare(CMD_ADDC)) {
 		if (args.size() != 4)
-			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
+			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 			CMD_ADDC << _T(" <nome-empresa> <número-ações> <preço-ação>") << std::endl << std::endl;
 
 		else
@@ -49,7 +49,7 @@ BOOL cmd::validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args) {
 	*/
 	else if (!args[0].compare(CMD_LISTC)) {
 		if (args.size() != 1)
-			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
+			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 			CMD_LISTC << std::endl << std::endl;
 
 		else
@@ -64,7 +64,7 @@ BOOL cmd::validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args) {
 	*/
 	else if (!args[0].compare(CMD_STOCK)) {
 		if (args.size() != 3)
-			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
+			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 				CMD_STOCK << _T(" <nome-empresa> <preço-ação>") << std::endl << std::endl;
 
 		else
@@ -79,7 +79,7 @@ BOOL cmd::validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args) {
 	*/
 	else if (!args[0].compare(CMD_USERS)) {
 		if (args.size() != 1)
-			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
+			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 				CMD_USERS << std::endl << std::endl;
 
 		else
@@ -95,7 +95,7 @@ BOOL cmd::validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args) {
 	*/
 	else if (!args[0].compare(CMD_PAUSE)) {
 		if (args.size() != 2)
-			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
+			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 				CMD_PAUSE << _T(" <número-segundos>") << std::endl << std::endl;
 
 		else {
@@ -112,7 +112,7 @@ BOOL cmd::validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args) {
 	*/
 	else if (!args[0].compare(CMD_CLOSE)) {
 		if (args.size() != 1)
-			std::tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
+			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 				CMD_CLOSE << std::endl << std::endl;
 
 		return TRUE;
