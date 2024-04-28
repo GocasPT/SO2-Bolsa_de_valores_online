@@ -65,11 +65,11 @@ void Files::read_files(BOLSA& servidor) {
 }
 
 void Files::write_files(BOLSA& servidor) {
-	std::_tcout << _T("A salvar dados no ficheiros... (0/") << TOTAL_FILES << _T(")") << std::endl;
+	std::_tcout << _T("A salvar dados no ficheiros... (0/") << TOTAL_FILES - 1 << _T(")") << std::endl;
 
 	/*TODO:
-	  - get data from servidor.users and write in FILE_USERS
 	  - get data from servidor.companies and write in FILE_COMPANIES
+	  - maybe more files to write/save
 	*/
 
 	std::_tcout << TAG_NORMAL << _T("Dados salvos no ficheiroscom sucesso") << std::endl << std::endl;
