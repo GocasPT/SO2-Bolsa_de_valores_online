@@ -10,19 +10,18 @@
 #define TAG_ERROR _T("[ERRO] ")
 #define TAG_WARNING _T("[WARNING] ")
 
+//TODO: add user info to know with one is "talking"
 typedef struct {
-	bool isRunning;
+	bool& isRunning;
 	HANDLE hPipe;
-	std::vector<USER>* userList;
-	std::queue<USER>* userQueue;
-	std::vector<HANDLE>* hUsersThreadList;
-	std::vector<HANDLE>* hUsersPipesList;
-	DWORD maxUsers;
-	CRITICAL_SECTION* cs;
+	std::vector<USER>& userList;
+	CRITICAL_SECTION& cs;
 } TDATA;
 
 //TODO: check if is missing any field
 typedef struct {
+	bool isRunning;
+
 	// Registry
 	HKEY hKey; //TODO: we need this?
 
@@ -43,8 +42,8 @@ typedef struct {
 	HANDLE hReciverThread;
 	std::vector<HANDLE> hUsersThreadList;
 	std::vector<HANDLE> hUsersPipesList;
+	std::vector<TDATA> tDataList;
 	CRITICAL_SECTION cs;
-	TDATA tData;
 } BOLSA;
 
 #endif // !BOLSA_H

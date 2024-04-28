@@ -1,4 +1,4 @@
-﻿#include "named pipe.h"
+﻿#include "namedPipe.h"
 #include <sstream>
 
 void NamedPipe::connectToServer(CLIENTE& user) {
@@ -7,32 +7,21 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 	  - Create thread to receive messages
 	*/
 
-	user.hPipe = CreateFile(PIPE_BOLSA_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-	if (user.hPipe == INVALID_HANDLE_VALUE) {
+	std::_tcout << TEXT("A conectar ao servidor...") << std::endl;
+	if (!WaitNamedPipe(PIPE_BOLSA_NAME, NMPWAIT_WAIT_FOREVER)) {
+		std::stringstream ss;
+		ss << "Erro ao esperar pelo servidor (" << GetLastError() << ")";
+		throw std::runtime_error(ss.str());
+	}
+
+	user.hPipe = CreateFile(PIPE_BOLSA_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	//if (user.hPipe == INVALID_HANDLE_VALUE) {
+	if (user.hPipe == NULL) {
 		std::stringstream ss;
 		ss << "Erro ao conectar ao servidor (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
 	}
-
-	//TODO: Check if this block is necessary
-	else if (GetLastError() == ERROR_PIPE_BUSY) {
-		std::stringstream ss;
-		ss << "Servidor ocupado (" << GetLastError() << ")";
-		throw std::runtime_error(ss.str());
-	}
-
-	else {
-		std::_tcout << TAG_NORMAL << TEXT("Conectado ao servidor") << std::endl;
-		user.pipeMode = PIPE_READMODE_MESSAGE;
-		if (!SetNamedPipeHandleState(user.hPipe, &user.pipeMode, NULL, NULL)) {
-			std::stringstream ss;
-			ss << "Erro ao configurar o modo do named pipe (" << GetLastError() << ")";
-			throw std::runtime_error(ss.str());
-		}
-		else {
-			std::_tcout << TAG_NORMAL << TEXT("Modo configurado") << std::endl;
-		}
-	}
+	std::_tcout << TEXT("Conectado ao servidor") << std::endl;
 
 	user.hThread = CreateThread(NULL, 0, reciverMessage, &user, 0, NULL); //TODO: Check parameter pointer
 	if (user.hThread == NULL) {
@@ -40,9 +29,7 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 		ss << "Erro ao criar a thread (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
 	}
-	else {
-		std::_tcout << TAG_NORMAL << TEXT("Thread criada") << std::endl;
-	}
+	std::_tcout << TAG_NORMAL << TEXT("Thread criada com sucesso") << std::endl;
 }
 
 DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
@@ -53,12 +40,14 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 	*/
 
 	CLIENTE* user = (CLIENTE*)lpParam; //TODO: Change to user struct maybe
+	MESSAGE msg;
+	BOOL ret;
+	DWORD nBytes;
 
 	while (!user->tContinue) {
-		DWORD dwRead;
-		MESSAGE msg;
-
-		if (!ReadFile(user->hPipe, &msg, sizeof(MESSAGE) * sizeof(TCHAR), &dwRead, NULL)) {
+		//TODO: On disconnect, close/exit program
+		ret = ReadFile(user->hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
+		if (!ret || !nBytes) {
 			std::_tcout << TAG_ERROR << TEXT("Erro ao ler a mensagem") << std::endl;
 			return -1;
 		}
@@ -71,15 +60,14 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 }
 
 void NamedPipe::send(CLIENTE& user, MESSAGE msg) {
-	DWORD dwWrite;
+	BOOL ret;
+	DWORD nBytes;
 
-	if (!WriteFile(user.hPipe, &msg, sizeof(MESSAGE) * sizeof(TCHAR), &dwWrite, NULL)) {
+	ret = WriteFile(user.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
+	if (!ret || !nBytes) {
 		std::stringstream ss;
-		ss << "Erro ao enviar a mensagem (" << GetLastError() << ")";
+		ss << "Erro ao enviar a mensagem [ " << ret << " " << nBytes << "] ()" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
-	}
-	else {
-		std::_tcout << TAG_NORMAL << TEXT("Mensagem enviada") << std::endl;
 	}
 }
 
@@ -95,10 +83,7 @@ void NamedPipe::requestLogin(CLIENTE& user, std::TSTRING name, std::TSTRING pass
 
 		MESSAGE msg;
 		msg.code = CODE_LOGIN;
-		_tcscpy_s(msg.data, name.c_str());
-
-		//TODO: PLACEHOLDER
-		std::_tcout << TAG_NORMAL << TEXT("Enviando mensagem: ") << msg.data << std::endl;
+		_tcscpy_s(msg.data, data.c_str());
 
 		send(user, msg);
 	} catch (std::runtime_error& e) {

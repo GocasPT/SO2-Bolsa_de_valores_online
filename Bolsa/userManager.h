@@ -5,11 +5,11 @@
 #include "bolsa.h"
 
 namespace UserManager {
-	BOOL validateUser(BOLSA& servidor, USER user);
+	bool validateUser(const std::vector<USER> &userList, USER user);
 	void addUser(BOLSA& servidor, USER newUser);
 	void removeUser(BOLSA& servidor, std::TSTRING userName);
 	void listUsers(BOLSA& servidor);
-	USER* getUser(BOLSA& servidor, std::TSTRING userName);
+	USER& getUser(std::vector<USER> &userList, std::TSTRING userName);
 	void releaseUsers(BOLSA& servidor);
 }
 

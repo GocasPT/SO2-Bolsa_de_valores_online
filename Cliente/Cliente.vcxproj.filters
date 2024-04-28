@@ -18,7 +18,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="named pipe.cpp">
+    <ClCompile Include="namedPipe.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="commands.cpp">
@@ -26,7 +26,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="named pipe.h">
+    <ClInclude Include="namedPipe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="commands.h">

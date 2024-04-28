@@ -2,10 +2,10 @@
 #include <algorithm>
 
 //TODO: check
-BOOL UserManager::validateUser(BOLSA& servidor, USER user) {
-	auto it = std::find_if(servidor.userList.begin(), servidor.userList.end(),
-		[user](USER u) { return u.name == user.name && u.password == user.password; });
-	if (it == servidor.userList.end())
+bool UserManager::validateUser(const std::vector<USER> &userList, USER user) {
+	auto it = std::find_if(userList.begin(), userList.end(),
+		[user](USER userItem) { return _tcscmp(userItem.name, user.name) == 0 && _tcscmp(userItem.password, user.password) == 0; });
+	if (it == userList.end())
 		return false;
 	else
 		return true;
@@ -56,15 +56,14 @@ void UserManager::listUsers(BOLSA& bolsa) {
 }
 
 //TODO: check
-USER* UserManager::getUser(BOLSA& bolsa, std::TSTRING userName) {
-	std::vector<USER>& userList = bolsa.userList;
-
+USER& UserManager::getUser(std::vector<USER> &userList, std::TSTRING userName) {
 	auto it = std::find_if(userList.begin(), userList.end(),
-		[userName](USER user) { return user.name == userName; });
-	if (it != userList.end())
-		return &(*it);
+		[userName](USER user) { return userName.compare(user.name) == 0; });
+	
+	if (it == userList.end())
+		throw std::runtime_error("User not found"); //TODO: improve exception
 	else
-		return nullptr;
+		return *it;
 }
 
 //TODO: check

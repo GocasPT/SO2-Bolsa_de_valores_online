@@ -1,5 +1,5 @@
 #include "SO2_Utils.h"
-#include "named pipe.h"
+#include "namedPipe.h"
 #include "cliente.h"
 #include "commands.h"
 #include <fcntl.h>
@@ -25,9 +25,6 @@ int _tmain(int argc, std::TSTRING argv[]) {
 	_setmode(_fileno(stdout), _O_WTEXT);
 #endif 
 
-	std::_tcout << TEXT("Sou o programa \'Cliente\'") << std::endl;
-	std::_tcin;
-
 	if (!checkServerIsRunnig()) {
 		std::_tcout << TAG_ERROR << TEXT("O servidor não está a correr") << std::endl;
 		exit(-1);
@@ -38,7 +35,10 @@ int _tmain(int argc, std::TSTRING argv[]) {
 
 	cmd::consoleRoutine(currentUser);
 
-	//TODO: close all handlers, pipe, threads, etc
+	std::_tcout << std::endl << TAG_NORMAL << _T("A sair do programa cliente...") << std::endl << std::endl;
+
+	//TODO: Close all handles, thread, etc
+	NamedPipe::close(currentUser);
 
 	return 0;
 }

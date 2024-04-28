@@ -22,7 +22,7 @@ void closeServer(BOLSA& servidor) {
 	std::_tcout << std::endl <<
 		TAG_NORMAL << _T("A fechar o servidor...") << std::endl << std::endl;
 
-	servidor.tData.isRunning = FALSE;
+	servidor.isRunning = false;
 
 	//TODO: PLACEHOLDER
 	HANDLE hTemp = CreateFile(PIPE_BOLSA_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
@@ -49,6 +49,8 @@ void configServer(BOLSA &servidor) {
 	}
 
 	//TODO: check if all handlers are not NULL (error code)
+
+	servidor.isRunning = true;
 }
 
 int _tmain(int argc, std::TSTRING argv[]) {
