@@ -138,16 +138,16 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 		ret = ReadFile(data->hPipe, (LPVOID) &msg, sizeof(MESSAGE), &nBytes, NULL);
 		if (!ret || !nBytes) {
 			if (GetLastError() == ERROR_BROKEN_PIPE) {
-				std::_tcout << TAG_NORMAL << _T("Cliente ") << data->myUser->name << _T(" desconectado") << std::endl; //TODO: show user info, close thread, set user offline
+				std::_tcout << std::endl << TAG_NORMAL << _T("Cliente ") << data->myUser->name << _T(" desconectado") << std::endl; //TODO: show user info, close thread, set user offline
 			} else {
-				std::_tcout << TAG_ERROR << _T("Erro ao ler a mensagem do cliente (") << GetLastError() << _T(")") << std::endl;
+				std::_tcout << std::endl << TAG_ERROR << _T("Erro ao ler a mensagem do cliente (") << GetLastError() << _T(")") << std::endl;
 			}
 
 			data->isRunning = false;
 			break;
 		}
 
-		std::_tcout << TAG_NORMAL << _T("Mensagem recebida: ") << msg.data << _T(" [CODE: ") << msg.code << _T("]") << std::endl;
+		std::_tcout << std::endl << TAG_NORMAL << _T("Mensagem recebida: ") << msg.data << _T(" [CODE: ") << msg.code << _T("]") << std::endl;
 
 		EnterCriticalSection(&data->cs);
 

@@ -7,7 +7,7 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 	  - Create thread to receive messages
 	*/
 
-	std::_tcout << TEXT("A conectar ao servidor...") << std::endl;
+	std::_tcout << _T("A conectar ao servidor...");
 	if (!WaitNamedPipe(PIPE_BOLSA_NAME, NMPWAIT_WAIT_FOREVER)) {
 		std::stringstream ss;
 		ss << "Erro ao esperar pelo servidor (" << GetLastError() << ")";
@@ -21,7 +21,7 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 		ss << "Erro ao conectar ao servidor (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
 	}
-	std::_tcout << TEXT("Conectado ao servidor") << std::endl;
+	std::_tcout << _T(" Conectado ao servidor") << std::endl;
 
 	user.hThread = CreateThread(NULL, 0, reciverMessage, &user, 0, NULL); //TODO: Check parameter pointer
 	if (user.hThread == NULL) {
@@ -29,13 +29,13 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 		ss << "Erro ao criar a thread (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
 	}
-	std::_tcout << TAG_NORMAL << TEXT("Thread criada com sucesso") << std::endl;
+	std::_tcout << _T("Thread para recber mesagens do servidor criada com sucesso") << std::endl;
 }
 
 DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 	/*TODO:
-	  - Cast lpParam → struct
-	  - Receive message from server
+	  x Cast lpParam → struct
+	  x Receive message from server
 	  - Show message to user
 	*/
 
@@ -44,9 +44,9 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 	BOOL ret;
 	DWORD nBytes;
 
+	Sleep(2000); // Pausa para esperar que envie a mensagem de login (ReadFile bloqueia WriteFile)
+
 	while (user->tContinue) {
-		//TODO:PLACEHOLDER (ReadFile and WriteFile block each other...)
-		Sleep(1000);
 
 		//TODO: On disconnect, close/exit program
 		ret = ReadFile(user->hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
@@ -62,39 +62,36 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 			return -1;
 		}
 
-		//TODO:PLACEHOLDER
-		std::_tcout << TEXT("Mensagem recebida: ") << msg.code << TEXT(" ") << msg.data << std::endl;
-
 		// Se não tiver feito login, ignora todas as mensagens exceto o login
 		if (!user->logged && msg.code != CODE_LOGIN)
 			continue;
 
 		switch (msg.code) {
 			case CODE_LOGIN:
-				std::_tcout << TAG_NORMAL << TEXT("Autenticado com sucesso") << std::endl;
 				user->logged = true;
+				std::_tcout << std::endl << TAG_NORMAL << TEXT("User autnenticado. Bem-vindo ") << user->name << _T("!") << std::endl;
 				break;
 
 			case CODE_DENID:
-				std::_tcout << TAG_ERROR << TEXT("Autenticação negada. Verifique as credência novamente") << std::endl;
+				std::_tcout << std::endl << TAG_ERROR << TEXT("Autenticação negada. Verifique as credência novamente") << std::endl;
 				return 1;
 
 			case CODE_LISTC_ITEM:
 				//TODO: Show item from list companies
-				std::_tcout << msg.data << std::endl;
+				std::_tcout << std::endl << msg.data << std::endl;
 				break;
 
 			case CODE_BALANCE:
 				//TOOD: Show balance and update local balance (to show)
-				std::_tcout << msg.data << std::endl;
+				std::_tcout << std::endl << msg.data << std::endl;
 				break;
 
 			case CODE_GENERIC_FEEDBACK:
-				std::_tcout << msg.data << std::endl;
+				std::_tcout << std::endl << msg.data << std::endl;
 				break;
 
 			default:
-				std::_tcout << TAG_ERROR << TEXT("Mensagem desconhecida") << std::endl;
+				std::_tcout << std::endl << TAG_ERROR << TEXT("Mensagem desconhecida") << std::endl;
 				break;
 		}
 	}
@@ -112,11 +109,25 @@ void NamedPipe::send(CLIENTE& user, MESSAGE msg) {
 		ss << "Erro ao enviar a mensagem [ " << ret << " " << nBytes << "] ()" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
 	}
+
+	//TODO: Improve this (gona be cool 😎)
+	if (!user.logged) {
+		std::_tcout << _T("A espera de autenticação");
+
+		while (!user.logged) {
+			std::_tcout << _T(".");
+			Sleep(1000);
+		}
+
+		//std::_tcout << std::endl;
+	}
 }
 
 void NamedPipe::requestLogin(CLIENTE& user, std::TSTRING name, std::TSTRING password) {
 	try {
 		connectToServer(user);
+
+		_tcscpy_s(user.name, name.c_str());
 
 		std::_tstringstream ss;
 		ss << name << _T(" ") << password;
@@ -140,10 +151,6 @@ void NamedPipe::requestList(CLIENTE& user) {
 }
 
 void NamedPipe::requestBuy(CLIENTE& user, std::TSTRING company, DWORD numOfStocks) {
-	/*TODO
-	  - Request buy to server
-	*/
-
 	try {
 		std::_tstringstream ss;
 		ss << company << _T(" ") << numOfStocks;
@@ -159,10 +166,6 @@ void NamedPipe::requestBuy(CLIENTE& user, std::TSTRING company, DWORD numOfStock
 }
 
 void NamedPipe::requestSell(CLIENTE& user, std::TSTRING company, DWORD numOfStocks) {
-	/*TODO
-	  - Request sell to server
-	*/
-
 	try {
 		std::_tstringstream ss;
 		ss << company << _T(" ") << numOfStocks;
@@ -178,10 +181,6 @@ void NamedPipe::requestSell(CLIENTE& user, std::TSTRING company, DWORD numOfStoc
 }
 
 void NamedPipe::requestBalance(CLIENTE& user) {
-	/*TODO
-	  - Request balance to server
-	*/
-
 	try {
 		send(user, { CODE_BALANCE, _T('\0')});
 	} catch (std::runtime_error& e) {
