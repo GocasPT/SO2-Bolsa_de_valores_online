@@ -12,6 +12,9 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 				CMD_LOGIN << _T(" <username> <password>") << std::endl << std::endl;
 
+		else if (userData.logged)
+			std::_tcout << TAG_WARNING << _T("Já autenticates como ") << userData.name << _T(". Para torcar de utilizar, sair do programa com '") << CMD_EXIT << _T("'") << std::endl;
+
 		else
 			NamedPipe::requestLogin(userData, args[1], args[2]);
 			

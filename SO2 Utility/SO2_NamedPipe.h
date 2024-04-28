@@ -15,5 +15,11 @@
 #define CODE_BUY 4
 #define CODE_SELL 5
 #define CODE_BALANCE 6
+#define CODE_GENERIC_FEEDBACK 7
+
+typedef struct {
+	DWORD code;
+	TCHAR data[MAX];
+} MESSAGE;
 
 #endif // !SO2_NAMED_PIPE_H

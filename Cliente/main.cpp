@@ -30,6 +30,7 @@ int _tmain(int argc, std::TSTRING argv[]) {
 		exit(-1);
 	}
 
+	currentUser.tContinue = true;
 	currentUser.logged = false;
 	std::_tcout << TAG_NORMAL << TEXT("Executa o comando \'") << CMD_LOGIN << _T("\' para puder ligar ao servidor") << std::endl;
 

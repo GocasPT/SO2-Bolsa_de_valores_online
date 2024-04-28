@@ -50,9 +50,4 @@ typedef struct {
 	//TODO: list of N most value empresas
 } SHARED_MEMORY;
 
-typedef struct {
-	DWORD code;
-	TCHAR data[MAX];
-} MESSAGE;
-
 #endif // !SO2_UTILS_H
