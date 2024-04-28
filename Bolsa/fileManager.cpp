@@ -13,18 +13,10 @@ void Files::read_files(BOLSA& servidor) {
 
 	file.open(FILE_USERS);
 	if (file.is_open()) {
-		std::TSTRING name, password;
-		float balance;
-
-		//TODO: read file
 		while (std::getline(file, line)) {
-			ss << line;
-			ss >> name >> password >> balance;
-
 			USER user;
-			_tcscpy_s(user.name, name.c_str());
-			_tcscpy_s(user.password, password.c_str());
-			user.balance = balance;
+			ss << line;
+			ss >> user.name >> user.password >> user.balance;
 			user.connected = false;
 
 			servidor.userList.push_back(user);

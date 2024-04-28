@@ -2,7 +2,7 @@
 #include <algorithm>
 
 //TODO: check
-bool UserManager::validateUser(const std::vector<USER> &userList, USER user) {
+bool UserManager::validateUser(const USER_LIST& userList, USER user) {
 	auto it = std::find_if(userList.begin(), userList.end(),
 		[user](USER userItem) { return _tcscmp(userItem.name, user.name) == 0 && _tcscmp(userItem.password, user.password) == 0; });
 	if (it == userList.end())
@@ -13,8 +13,8 @@ bool UserManager::validateUser(const std::vector<USER> &userList, USER user) {
 
 //TODO: check
 void UserManager::addUser(BOLSA& bolsa, USER newUser) {
-	std::vector<USER> &userList = bolsa.userList;
-	std::queue<USER> &userQueue = bolsa.userQueue;
+	USER_LIST& userList = bolsa.userList;
+	USER_QUEUE& userQueue = bolsa.userQueue;
 
 	if (userList.size() < bolsa.maxUsers)
 		userList.push_back(newUser);
@@ -24,8 +24,8 @@ void UserManager::addUser(BOLSA& bolsa, USER newUser) {
 
 //TODO: check
 void UserManager::removeUser(BOLSA& bolsa, std::TSTRING userName) {
-	std::vector<USER>& userList = bolsa.userList;
-	std::queue<USER>& userQueue = bolsa.userQueue;
+	USER_LIST& userList = bolsa.userList;
+	USER_QUEUE& userQueue = bolsa.userQueue;
 
 	auto it = std::find_if(userList.begin(), userList.end(),
 		[userName](USER user) { return user.name == userName; });
@@ -56,7 +56,7 @@ void UserManager::listUsers(BOLSA& bolsa) {
 }
 
 //TODO: check
-USER& UserManager::getUser(std::vector<USER> &userList, std::TSTRING userName) {
+USER& UserManager::getUser(std::vector<USER>& userList, std::TSTRING userName) {
 	auto it = std::find_if(userList.begin(), userList.end(),
 		[userName](USER user) { return userName.compare(user.name) == 0; });
 	
@@ -67,9 +67,10 @@ USER& UserManager::getUser(std::vector<USER> &userList, std::TSTRING userName) {
 }
 
 //TODO: check
+//TODO: we need this?
 void UserManager::releaseUsers(BOLSA& bolsa) {
-	std::vector<USER>& userList = bolsa.userList;
-	std::queue<USER>& userQueue = bolsa.userQueue;
+	USER_LIST& userList = bolsa.userList;
+	USER_QUEUE& userQueue = bolsa.userQueue;
 
 	for (auto it = userList.begin(); it != userList.end(); it++)
 		//TODO: send message to user to disconnect

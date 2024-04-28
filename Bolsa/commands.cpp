@@ -27,7 +27,7 @@ void cmd::consoleRoutine(BOLSA& servidor) {
 	} while (input.compare(CMD_CLOSE));
 }
 
-BOOL cmd::validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args) {
+bool cmd::validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args) {
 	/*
 	* Comando: Acrescentar uma empresa
 	* Formato: addc <nome-empresa> <número-ações> <preço-ação>

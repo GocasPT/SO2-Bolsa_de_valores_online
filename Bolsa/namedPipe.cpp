@@ -56,7 +56,7 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 		std::_tcout << std::endl << TAG_NORMAL << _T("Cliente conectado ao named pipe do servidor") << std::endl; //TODO: show user info
 
 		data->hUsersPipesList.push_back(hNewPipe);
-		TDATA newTDate = { data->isRunning, hNewPipe, data->userList, data->cs };
+		TDATA newTDate = { data->isRunning, hNewPipe, data->userList, nullptr, data->cs };
 		data->tDataList.push_back(newTDate);
 
 		std::_tcout << _T("Criando thread para comunicação com o cliente...") << std::endl; //TODO: show user info
@@ -115,6 +115,7 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 
 		EnterCriticalSection(&data->cs);
 
+		//TODO: remove the CODE_LOGIN logic (authetication before create this thread)
 		if (msg.code == CODE_LOGIN) {
 			USER loginUser;
 			ss << msg.data;
@@ -122,10 +123,10 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 
 			if (UserManager::validateUser(data->userList, loginUser)) {
 				try {
-					USER& user = UserManager::getUser(data->userList, loginUser.name);
-					user.connected = true;
+					data->myUser = &UserManager::getUser(data->userList, loginUser.name);
+					data->myUser->connected = true;
 
-					std::_tcout << TAG_NORMAL << _T("Utilizador ") << user.name << _T(" conectado") << std::endl;
+					std::_tcout << TAG_NORMAL << _T("Utilizador ") << data->myUser->name << _T(" conectado") << std::endl;
 
 					//TODO: send message to client (accept code)
 					//send();
@@ -135,8 +136,6 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 				}
 			}
 			else {
-				std::_tcout << TAG_ERROR << _T("Utilizador ") << loginUser.name << _T(" não encontrado") << std::endl;
-
 				//TODO: send message to client (denid code)
 				//send();
 			}
@@ -145,11 +144,13 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 		LeaveCriticalSection(&data->cs);
 	}
 
+	CloseHandle(data->hPipe);
+
 	return 0;
 }
 
 //TODO: check parameters
-void NamedPipe::send(BOLSA &servidor, std::TSTRING msg) {
+void NamedPipe::send(BOLSA &servidor, MESSAGE msg) {
 	/*TODO:
 	  - format message to send
 	  - send message

@@ -18,12 +18,12 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shared memory.cpp">
+    <ClCompile Include="sharedMemory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="shared memory.h">
+    <ClInclude Include="sharedMemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

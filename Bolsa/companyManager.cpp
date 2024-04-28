@@ -10,20 +10,13 @@ void CompanyManager::addCompany(BOLSA& servidor, std::TSTRING name, std::TSTRING
 
 	std::_tstringstream ss; //TODO: change to macro (tstringstream → wstringstream or stringstream)
 	ss << numOfStock << " " << pricePerStock;
-
-	DWORD numStocks;
-	float priceStock;
-	ss >> numStocks >> priceStock;
-
 	COMPANY company;
-	_tcscpy_s(company.name, name.c_str());
-	company.numFreeStocks = numStocks;
-	company.pricePerStock = priceStock;
+	ss >> company.numFreeStocks >> company.pricePerStock;
 
 	servidor.companyList.push_back(company);
 
 	std::_tcout << TAG_NORMAL << _T("Empresa adicionada com sucesso") << std::endl <<
-		_T("Nome: ") << name << _T(" | Nº de Ações: ") << numStocks << _T(" | Preço por Ação: ") << priceStock << std::endl << std::endl;
+		_T("Nome: ") << name << _T(" | Nº de Ações: ") << company.numFreeStocks << _T(" | Preço por Ação: ") << company.pricePerStock << std::endl << std::endl;
 }
 
 void CompanyManager::listCompanies(BOLSA& servidor) {

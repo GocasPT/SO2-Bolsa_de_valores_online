@@ -10,13 +10,21 @@
 #define TAG_ERROR _T("[ERRO] ")
 #define TAG_WARNING _T("[WARNING] ")
 
+typedef std::vector<USER> USER_LIST;
+typedef std::queue<USER> USER_QUEUE; //TODO: change and move this (queue of handles)
+typedef std::vector<COMPANY> COMPANY_LIST;
+typedef std::vector<HANDLE> HANDLE_LIST;
+
 //TODO: add user info to know with one is "talking"
 typedef struct {
 	bool& isRunning;
 	HANDLE hPipe;
-	std::vector<USER>& userList;
+	USER_LIST& userList;
+	USER* myUser;
 	CRITICAL_SECTION& cs;
 } TDATA;
+
+typedef std::vector<TDATA> TDATA_LIST;
 
 //TODO: check if is missing any field
 typedef struct {
@@ -26,8 +34,8 @@ typedef struct {
 	HKEY hKey; //TODO: we need this?
 
 	// User Manager
-	std::vector<USER> userList;
-	std::queue<USER> userQueue; //TODO: change and move this (queue of handles)
+	USER_LIST userList;
+	USER_QUEUE userQueue; //TODO: change and move this (queue of handles)
 	DWORD maxUsers;
 
 	// Company Manager
@@ -40,9 +48,9 @@ typedef struct {
 	// Named Pipe
 	HANDLE hPipe;
 	HANDLE hReciverThread;
-	std::vector<HANDLE> hUsersThreadList;
-	std::vector<HANDLE> hUsersPipesList;
-	std::vector<TDATA> tDataList;
+	HANDLE_LIST hUsersThreadList;
+	HANDLE_LIST hUsersPipesList;
+	TDATA_LIST tDataList;
 	CRITICAL_SECTION cs;
 } BOLSA;
 

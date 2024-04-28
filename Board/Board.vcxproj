@@ -129,10 +129,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="shared memory.cpp" />
+    <ClCompile Include="sharedMemory.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="shared memory.h" />
+    <ClInclude Include="sharedMemory.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
