@@ -2,8 +2,20 @@
 #include "userManager.h"
 #include <sstream>
 
+HANDLE NamedPipe::newNamedPipe() {
+	//TODO: add overlapped IO
+	return CreateNamedPipe(PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, sizeof(MESSAGE), sizeof(MESSAGE), PIPE_TIMEOUT, NULL);;
+}
+
 void NamedPipe::config(BOLSA& servidor) {
 	std::_tcout << _T("A configurar o named pipe para receber os clientes...") << std::endl;
+
+	servidor.hReciverPipe = newNamedPipe();
+	if (servidor.hReciverPipe == INVALID_HANDLE_VALUE) {
+		std::stringstream ss;
+		ss << "Erro ao criar o named pipe do servidor (" << GetLastError() << ")";
+		throw std::runtime_error(ss.str());
+	}
 
 	InitializeCriticalSection(&servidor.cs);
 
@@ -19,163 +31,203 @@ void NamedPipe::config(BOLSA& servidor) {
 
 DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 	BOLSA* data = (BOLSA*)lpParam;
+	USER loginUser;
 
-	while (data->isRunning) {
-	
-		/*TODO:
-		  x wait for client to connect
-		  - connection triger, enter critical section
-		  - if list is full, add to queue
-		  - else, add to list, create thread and create pipe
-		  - exit critical section
-		*/
-
-		HANDLE hNewPipe = CreateNamedPipe(PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, sizeof(MESSAGE), sizeof(MESSAGE), PIPE_TIMEOUT, NULL);
-		if (hNewPipe == INVALID_HANDLE_VALUE) {
-			std::_tcout << TAG_ERROR << _T("Erro ao criar o named pipe do servidor (") << GetLastError() << _T(")") << std::endl;
-			data->isRunning = false;
-			break;
-		}
-
-		if (!ConnectNamedPipe(hNewPipe, NULL)) {
-			std::_tcout << TAG_ERROR << _T("Erro ao conectar o cliente ao named pipe do servidor (") << GetLastError() << _T(")") << std::endl;
-			data->isRunning = false;
-			break;
-		}
-
-		/*TODO
-		  x read named pipe
-		  x show message info
-		  x validade user
-		  - if valid, add to list or queue
-		  - if add to list, create thread
-		  - else, send message to client (denid code)
-		*/
-
-		//TODO: maybe move this to a function (authinticateUser)
-		BOOL ret;
-		DWORD nBytes;
-		MESSAGE msg;
-		std::_tstringstream ss;
-
-
-		ret = ReadFile(hNewPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
-		if (!ret || !nBytes) {
-			std::_tcout << TAG_ERROR << _T("Erro ao ler a mensagem do cliente (") << GetLastError() << _T(")") << std::endl;
-			data->isRunning = false;
-			break;
-		}
-
-		//TODO:PLACEHOLDER
-		std::_tcout << TAG_NORMAL << _T("Mensagem recebida: ") << msg.data << _T(" [CODE: ") << msg.code << _T("]") << std::endl;
-
-		USER loginUser;
-		ss << msg.data;
-		ss >> loginUser.name >> loginUser.password;
-
-		if (UserManager::validateUser(data->userList, loginUser)) {
-			try {
-				USER& user = UserManager::getUser(data->userList, loginUser.name);
-				user.connected = true;
-
-				send(hNewPipe, { CODE_LOGIN, _T('\0')}); // Manda mensagem de login com sucesso
-
-				std::_tcout << std::endl << TAG_NORMAL << _T("Cliente ") << user.name  << _T(" conectou ao servidor pelo named pipe") << std::endl;
-
-				//TODO: add user to list or queue
-				data->hUsersPipesList.push_back(hNewPipe);
-				TDATA newTDate = { data->isRunning, hNewPipe, data->userList, &user, data->cs };
-				data->tDataList.push_back(newTDate);
-
-				std::_tcout << _T("Criando thread para comunicação com o cliente...") << std::endl; //TODO: show user info
-				HANDLE newUserThread = CreateThread(NULL, 0, userRoutine, &newTDate, 0, NULL);
-				if (newUserThread == NULL) {
-					std::_tcout << TAG_ERROR << _T("Erro ao criar a thread para o cliente (") << GetLastError() << _T(")") << std::endl;
-					data->isRunning = false;
-					break;
-				}
-				data->hUsersThreadList.push_back(newUserThread);
-				std::_tcout << _T("Thread do cliente criada com sucesso") << std::endl; //TODO: show user info
-
-				std::_tcout << TAG_NORMAL << _T("A criar um named pipe para recber um novo cliente...") << std::endl;
-			} catch (std::runtime_error& e) {
-				std::_tcout << TAG_ERROR << e.what() << std::endl;
+	try {
+		while (data->isRunning) {
+			if (!ConnectNamedPipe(data->hReciverPipe, NULL)) {
+				std::stringstream ss;
+				ss << "Erro ao conectar o cliente ao named pipe do servidor (" << GetLastError() << ")";
+				throw std::runtime_error(ss.str());
 			}
-		} else
-			send(hNewPipe, { (DWORD) CODE_DENID, _T('\0')}); // Manda mensagem de login inválido
-		//TODO: maybe move this to a function (authinticateUser)
+
+			EnterCriticalSection(&data->cs);
+
+			if (auth(*data, loginUser)) {
+				USER& user = UserManager::getUser(data->userList, loginUser.name);
+				user.hReciverPipe = data->hReciverPipe;
+
+				if (UserManager::addUser(*data, &user)) {
+					user.connected = true;
+					TDATA newTDate = { data->isRunning, data->userList, data->hUsersQueue, &user, data->cs };
+					data->tDataList.push_back(newTDate);
+
+					std::_tcout << _T("Criando thread para comunicação com cliente...") << std::endl;
+					HANDLE newUserThread = CreateThread(NULL, 0, userRoutine, &newTDate, 0, NULL);
+					if (newUserThread == NULL) {
+						std::stringstream ss;
+						ss << "Erro ao criar a thread para o cliente (" << GetLastError() << ")";
+						throw std::runtime_error(ss.str());
+					}
+					data->hUsersThreadList.push_back(newUserThread);
+					std::_tcout << _T("Thread de comunicação com cliente criada com sucesso") << std::endl;
+				} else {
+					//TODO: check if need to do something more
+					send(data->hReciverPipe, { CODE_FULL, _T('\0') });
+					user.connected = false;
+				}
+				
+			} else {
+				CloseHandle(data->hReciverPipe);
+			}
+
+			std::_tcout << _T("A criar um novo named pipe para recber um novo cliente...") << std::endl;
+			data->hReciverPipe = newNamedPipe();
+			if (data->hReciverPipe == INVALID_HANDLE_VALUE) {
+				std::stringstream ss;
+				ss << "Erro ao criar o named pipe do servidor (" << GetLastError() << ")";
+				throw std::runtime_error(ss.str());
+			}
+
+			LeaveCriticalSection(&data->cs);
+		}
+	} catch (std::runtime_error& e) {
+		std::_tcout << TAG_ERROR << e.what() << std::endl;
+		LeaveCriticalSection(&data->cs);
+		data->isRunning = false;
 	}
 
 	return 0;
 }
 
+bool NamedPipe::auth(BOLSA& servidor, USER& loginUser) {
+	BOOL ret;
+	DWORD nBytes;
+	MESSAGE msg;
+
+	// Lê a mensagem de login do cliente
+	ret = ReadFile(servidor.hReciverPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
+	if (!ret || !nBytes) {
+		std::stringstream ss;
+		ss << "Erro ao ler a mensagem do cliente (" << GetLastError() << ")";
+		throw std::runtime_error(ss.str());
+	}
+	
+	// Extrai os dados da mensagem
+	std::_tstringstream ss;
+	ss << msg.data;
+	ss >> loginUser.name >> loginUser.password;
+	DWORD code;
+
+	if (UserManager::validateUser(servidor.userList, loginUser))
+		code = CODE_LOGIN; // Login válido
+	else
+		code = CODE_DENID; // Login inválido
+
+	send(servidor.hReciverPipe, { code, _T('\0') }); // Manda mensagem de login
+
+	return code == CODE_LOGIN; // Retorna se o login foi válido
+}
+
 DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
+	// BASE THREAD ROUTINE (recive messages, send messages, close pipe)
 	/*TODO
-	  x cast lpParam
-	  x loop to recive messages
-	  - entre critical section, get/set data (copy/modify), leave critical section
+	  x read message
+	  x show message info
+	  - enter critical section
+	  - get/set data
+	  - leave critical section
 	  - send message
+	*/
+
+	// USER MANAGER THREAD ROUTINE (leave cliente, enter new clientefrom queue if existe)
+	/*TODO
+	  - cliente exit
 	  - close pipe
+	  - check if queue have user
+	  - if have, get user from queue, add to list, use this thread and use the pipe
+	  - else, close thread
 	*/
 
 	TDATA* data = (TDATA*)lpParam;
 	MESSAGE msg;
 	BOOL ret;
-	DWORD nBytes;
+	DWORD nBytes, tID;
 	std::_tstringstream ss;
 
-	while (data->isRunning) {
-		/*TODO
-		  x read message
-		  x show message info
-		  - enter critical section
-		  - get/set data
-		  - leave critical section
-		  - send message
-		*/
-		//TODO: Cliente exit → close pipe + thread + other data
+	tID = GetCurrentThreadId();
+	std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Iniciada, pronto para receber pedidos");
 
-		ret = ReadFile(data->hPipe, (LPVOID) &msg, sizeof(MESSAGE), &nBytes, NULL);
-		if (!ret || !nBytes) {
-			if (GetLastError() == ERROR_BROKEN_PIPE) {
-				std::_tcout << std::endl << TAG_NORMAL << _T("Cliente ") << data->myUser->name << _T(" desconectado") << std::endl; //TODO: show user info, close thread, set user offline
-			} else {
-				std::_tcout << std::endl << TAG_ERROR << _T("Erro ao ler a mensagem do cliente (") << GetLastError() << _T(")") << std::endl;
+	//TODO: <START> LOOP QUEUE CLIENTE
+	do {
+		std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] A comunicar com o cliente ") << data->myUser->name << std::endl;
+
+		while (data->isRunning) {
+			ret = ReadFile(data->myUser->hReciverPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
+			if (!ret || !nBytes) {
+				if (GetLastError() == ERROR_BROKEN_PIPE)
+					std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Cliente ") << data->myUser->name << _T(" desconectado") << std::endl;
+				else
+					std::_tcout << std::endl << TAG_ERROR _T("[THREAD ") << tID << _T("] Erro ao ler a mensagem do cliente (") << GetLastError() << _T(")") << std::endl;
+
+				break;
 			}
 
-			data->isRunning = false;
-			break;
+			std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Mensagem recebida: ") << msg.data << _T(" [CODE: ") << msg.code << _T("]") << std::endl;
+
+			//TODO: improve this
+			EnterCriticalSection(&data->cs);
+
+			switch (msg.code) {
+				case CODE_LISTC:
+					//TODO: loop to send all companies (item by item)
+					//send(data->myUser.hReciverPipe, msg);
+
+					//while (auto company : data->)
+
+					break;
+
+				case CODE_BUY:
+					/*TODO
+					  - check user balance, company, amount, price, amount to buy
+					  - update user stock wallet, balance and data
+					  - send feedback to user
+					*/
+					break;
+
+				case CODE_SELL:
+					/*TODO
+					  - check user stock wallet
+					  - update user stock wallet, balance and data
+					  - send feedback to user
+					*/
+					break;
+
+				case CODE_BALANCE:
+					/*TODO
+					  - send user balance
+					*/
+					break;
+			}
+
+			LeaveCriticalSection(&data->cs);
 		}
 
-		std::_tcout << std::endl << TAG_NORMAL << _T("Mensagem recebida: ") << msg.data << _T(" [CODE: ") << msg.code << _T("]") << std::endl;
-
-		EnterCriticalSection(&data->cs);
-
-		if (msg.code == CODE_LISTC) {
-			//TODO: loop to send all companies (item by item)
-			send(data->hPipe, msg);
+		try {
+			data->myUser = UserManager::removeUser(data->userList, data->userQueue, data->myUser);
+		} catch (std::runtime_error& e) {
+			std::_tcout << TAG_ERROR << e.what() << std::endl;
 		}
+		
 
-		LeaveCriticalSection(&data->cs);
-	}
+	} while (data->myUser != nullptr && data->isRunning);
 
-	CloseHandle(data->hPipe);
+	//TODO: delete this tData from list
+	std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Não existe nenhum cliente para atener. A sair...") << std::endl;
 
 	return 0;
 }
 
-void NamedPipe::send(HANDLE hPipe, MESSAGE msg) {
+void NamedPipe::send(HANDLE hReciverPipe, MESSAGE msg) {
 	BOOL ret;
 	DWORD nBytes;
 
-	ret = WriteFile(hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
+	ret = WriteFile(hReciverPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
 	if (!ret || !nBytes) {
 		std::stringstream ss;
 		ss << "Erro ao enviar a mensagem [ " << ret << " " << nBytes << "] ()" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
 	}
-
-	std::_tcout << TAG_NORMAL << _T("Mensagem enviada: ") << msg.data << _T(" [CODE: ") << msg.code << _T("]") << std::endl;
 }
 
 //TODO [DEBUG]: something is throwing an exception
@@ -189,19 +241,19 @@ void NamedPipe::close(BOLSA& servidor) {
 	WaitForSingleObject(servidor.hReciverThread, INFINITE);
 
 	//TODO: maybe show user info in same time
-	for (DWORD i = 0; i < servidor.hUsersPipesList.size(); i++) {
-		std::_tcout << _T("A fecher o pipe do cliente ") << i << _T(" de ") << servidor.hUsersPipesList.size() << std::endl;
-		if (!DisconnectNamedPipe(servidor.hUsersPipesList[i])) {
+	for (DWORD i = 0; i < servidor.hUsersList.size(); i++) {
+		std::_tcout << _T("A fecher o pipe do cliente ") << i << _T(" de ") << servidor.hUsersList.size() << std::endl;
+		if (!DisconnectNamedPipe(servidor.hUsersList[i])) {
 			std::_tcout << TAG_ERROR << _T("Erro ao fechar o pipe do cliente ") << i << _T(" (") << GetLastError() << _T(")") << std::endl;
 		}
 
 		CloseHandle(servidor.hUsersThreadList[i]);
-		CloseHandle(servidor.hUsersPipesList[i]);
+		CloseHandle(servidor.hUsersList[i]);
 	}
 
 	CloseHandle(servidor.hReciverThread);
 	DeleteCriticalSection(&servidor.cs);
-	CloseHandle(servidor.hPipe);
+	CloseHandle(servidor.hReciverPipe);
 
 	std::_tcout << TAG_NORMAL << _T("Named pipe fechado com sucesso") << std::endl << std::endl;
 }

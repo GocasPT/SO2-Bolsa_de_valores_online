@@ -7,7 +7,7 @@ void Registry::config(BOLSA& servidor) {
 	  - if not exist, create registry with default value and set it
 	*/
 
-	servidor.maxUsers = 10; //TODO: change '10' to correct value
+	servidor.maxUsers = 1; //TODO: change '10' to correct value
 
 	std::_tcout << TAG_NORMAL << _T("Dados lidos com sucesso") << std::endl << std::endl;
 }

@@ -13,7 +13,7 @@ typedef struct {
 	TCHAR name[MAX];
 	TCHAR password[MAX]; //TODO: maybe remove this (just request to server)
 	float balance; //TODO: maybe remove this (just request to server)
-	HANDLE hPipe;
+	HANDLE hReciverPipe;
 	DWORD pipeMode;
 	HANDLE hThread;
 	bool tContinue; //TODO: change name

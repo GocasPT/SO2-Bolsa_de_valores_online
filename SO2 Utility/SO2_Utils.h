@@ -31,23 +31,20 @@ typedef struct {
 	int PLACE_HOLDER;
 } STOCK_WALLET;
 
+//TODO: change some fields
 typedef struct {
 	TCHAR name[MAX];
 	TCHAR password[MAX];
 	float balance;
 	STOCK_WALLET wallet; //TODO: check this
 	bool connected;
-} USER;
+	bool inQueue;
+} USER_DATA;
 
 typedef struct {
 	TCHAR name[MAX];
 	DWORD numFreeStocks;
 	float pricePerStock;
 } COMPANY;
-
-typedef struct {
-	int numEnterprise;
-	//TODO: list of N most value empresas
-} SHARED_MEMORY;
 
 #endif // !SO2_UTILS_H

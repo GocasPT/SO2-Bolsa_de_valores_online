@@ -14,9 +14,9 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 		throw std::runtime_error(ss.str());
 	}
 
-	user.hPipe = CreateFile(PIPE_BOLSA_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	user.hReciverPipe = CreateFile(PIPE_BOLSA_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	//if (user.hPipe == INVALID_HANDLE_VALUE) {
-	if (user.hPipe == NULL) {
+	if (user.hReciverPipe == NULL) {
 		std::stringstream ss;
 		ss << "Erro ao conectar ao servidor (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
@@ -44,18 +44,17 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 	BOOL ret;
 	DWORD nBytes;
 
-	Sleep(2000); // Pausa para esperar que envie a mensagem de login (ReadFile bloqueia WriteFile)
+	Sleep(2000); //TOPO: remove this after overlapped IO implementation
 
 	while (user->tContinue) {
 
-		//TODO: On disconnect, close/exit program
-		ret = ReadFile(user->hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
+		ret = ReadFile(user->hReciverPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
 		if (!ret || !nBytes) {
 			if (GetLastError() == ERROR_BROKEN_PIPE) {
 				std::_tcout << TAG_NORMAL << TEXT("O servidor encerrou. A sair do programa...") << std::endl;
 				user->tContinue = false;
 				user->logged = false;
-				return 2;
+				return 3;
 			}
 
 			std::_tcout << TAG_ERROR << TEXT("Erro ao ler a mensagem") << std::endl;
@@ -76,6 +75,10 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 				std::_tcout << std::endl << TAG_ERROR << TEXT("Autenticação negada. Verifique as credência novamente") << std::endl;
 				return 1;
 
+			case CODE_FULL:
+				std::_tcout << std::endl << TAG_ERROR << TEXT("Servidor cheio. Tente mais tarde") << std::endl;
+				return 2; //TODO: remove this, is wating util free slot appear OR user close OR server close
+
 			case CODE_LISTC_ITEM:
 				//TODO: Show item from list companies
 				std::_tcout << std::endl << msg.data << std::endl;
@@ -89,10 +92,6 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 			case CODE_GENERIC_FEEDBACK:
 				std::_tcout << std::endl << msg.data << std::endl;
 				break;
-
-			default:
-				std::_tcout << std::endl << TAG_ERROR << TEXT("Mensagem desconhecida") << std::endl;
-				break;
 		}
 	}
 
@@ -103,7 +102,7 @@ void NamedPipe::send(CLIENTE& user, MESSAGE msg) {
 	BOOL ret;
 	DWORD nBytes;
 
-	ret = WriteFile(user.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
+	ret = WriteFile(user.hReciverPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
 	if (!ret || !nBytes) {
 		std::stringstream ss;
 		ss << "Erro ao enviar a mensagem [ " << ret << " " << nBytes << "] ()" << GetLastError() << ")";

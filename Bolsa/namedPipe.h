@@ -6,11 +6,12 @@
 #include "SO2_NamedPipe.h"
 
 namespace NamedPipe {
-	//TODO: Functions for named  pipe (server-side)
+	HANDLE newNamedPipe();
 	void config(BOLSA& servidor);
+	bool auth(BOLSA& servidor, USER &loginUser);
 	DWORD WINAPI reciverRoutine(LPVOID lpParam);
 	DWORD WINAPI userRoutine(LPVOID lpParam);
-	void send(HANDLE hPipe, MESSAGE msg);
+	void send(HANDLE hReciverPipe, MESSAGE msg);
 	void close(BOLSA& servidor);
 }
 

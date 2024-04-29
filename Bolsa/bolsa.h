@@ -10,48 +10,55 @@
 #define TAG_ERROR _T("[ERRO] ")
 #define TAG_WARNING _T("[WARNING] ")
 
+//TODO: check this struct
+typedef struct USER : USER_DATA {
+	HANDLE hReciverPipe; // Handle of the cliente pipe
+} USER;
+
 typedef std::vector<USER> USER_LIST;
-typedef std::queue<USER> USER_QUEUE; //TODO: change and move this (queue of handles)
+typedef std::queue<USER*> USER_QUEUE;
 typedef std::vector<COMPANY> COMPANY_LIST;
 typedef std::vector<HANDLE> HANDLE_LIST;
 
-//TODO: add user info to know with one is "talking"
 typedef struct {
 	bool& isRunning;
-	HANDLE hPipe;
 	USER_LIST& userList;
+	USER_QUEUE& userQueue;
 	USER* myUser;
 	CRITICAL_SECTION& cs;
 } TDATA;
 
 typedef std::vector<TDATA> TDATA_LIST;
 
+//TODO: create new struct for reciverRoutine?
+
 //TODO: check if is missing any field
 typedef struct {
+	/* GENERAL	*/
 	bool isRunning;
 
-	// Registry
+	/* REGISTRY */
 	HKEY hKey; //TODO: we need this?
 
-	// User Manager
+	/* USER MANAGER */
 	USER_LIST userList;
-	USER_QUEUE userQueue; //TODO: change and move this (queue of handles)
 	DWORD maxUsers;
 
-	// Company Manager
-	std::vector<COMPANY> companyList;
+	/* COMPANY MANAGER */
+	std::vector<COMPANY> companyList; // List of companies
 
-	// Shared Memory
-	HANDLE hSharedMemory;
-	HANDLE hEvent;
+	/* SHARED MEMORY */
+	HANDLE hSharedMemory; // Handle shared memory
+	HANDLE hEvent; // Event to triggerto update the shared memory
 
-	// Named Pipe
-	HANDLE hPipe;
-	HANDLE hReciverThread;
-	HANDLE_LIST hUsersThreadList;
-	HANDLE_LIST hUsersPipesList;
-	TDATA_LIST tDataList;
-	CRITICAL_SECTION cs;
+	/* NAMED PIPE */
+	HANDLE hReciverPipe; // Current reciver pipe
+	HANDLE hReciverThread; // Reciver thread
+	HANDLE_LIST hUsersThreadList; // Thread for comunication with clients
+	HANDLE_LIST hUsersList; // List of clients connected
+	USER_QUEUE hUsersQueue; // Queue of clients waiting to connect
+	TDATA_LIST tDataList; // Data for each thread
+	CRITICAL_SECTION cs; // Critical section for shared data
 } BOLSA;
 
 #endif // !BOLSA_H

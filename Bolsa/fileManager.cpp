@@ -18,6 +18,8 @@ void Files::read_files(BOLSA& servidor) {
 			ss << line;
 			ss >> user.name >> user.password >> user.balance;
 			user.connected = false;
+			user.inQueue = false;
+			user.hReciverPipe = INVALID_HANDLE_VALUE;
 
 			servidor.userList.push_back(user);
 			ss.clear();

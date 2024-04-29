@@ -8,14 +8,22 @@
 #define PIPE_BOLSA_NAME _T("\\\\.\\pipe\\bolsa")
 
 //TODO: code for types of messages/requests (login, denid, listc, buy, sell, etc) [codes for server and cliente]
+//TODO: set better codes
 #define CODE_LOGIN 1
-#define CODE_DENID -1
+#define CODE_DENID 8
+#define CODE_FULL 0
 #define CODE_LISTC 2
 #define CODE_LISTC_ITEM 3
 #define CODE_BUY 4
 #define CODE_SELL 5
 #define CODE_BALANCE 6
 #define CODE_GENERIC_FEEDBACK 7
+
+typedef struct {
+	OVERLAPPED overlap;
+	HANDLE hReciverPipe;
+	bool connected; //TODO: what is this for?
+} PIPE_INST;
 
 typedef struct {
 	DWORD code;

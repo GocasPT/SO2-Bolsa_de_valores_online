@@ -6,9 +6,9 @@
 
 namespace UserManager {
 	bool validateUser(const USER_LIST& userList, USER user);
-	void addUser(BOLSA& servidor, USER newUser);
-	void removeUser(BOLSA& servidor, std::TSTRING userName);
-	void listUsers(BOLSA& servidor);
+	bool addUser(BOLSA& servidor, USER* user);
+	USER* removeUser(USER_LIST& userList, USER_QUEUE& userQueue, USER* user);
+	void listUsers(const BOLSA& servidor);
 	USER& getUser(USER_LIST& userList, std::TSTRING userName);
 	void releaseUsers(BOLSA& servidor);
 }
