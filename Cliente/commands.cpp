@@ -2,6 +2,14 @@
 #include "namedPipe.h"
 #include <sstream>
 
+/**
+ * \brief Validar o comando introduzido pelo utilizador
+ * 
+ * \param userData - Estrutura com os dados do utilizador
+ * \param args - Vetor com os argumentos do comando
+ * 
+ * \return - true se o comando for válido, false caso contrário
+ */
 bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	/*
 	* Comando: Login
@@ -33,6 +41,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 		return true;
 	}
 
+	// Se não estiver autenticado, não pode executar os comandos seguintes
 	else if (!userData.logged) {
 		std::_tcout << TAG_WARNING << _T("Efetua o login primeiro") << std::endl;
 		return true;
@@ -101,6 +110,11 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	return false;
 }
 
+/**
+ * \brief Rotina do cliente para a consola
+ * 
+ * \param user - Estrutura com os dados do utilizador
+ */
 void cmd::consoleRoutine(CLIENTE& user) {
 	std::TSTRING input;
 	std::vector<std::TSTRING> args;

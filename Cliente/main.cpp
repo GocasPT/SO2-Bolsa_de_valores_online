@@ -39,9 +39,6 @@ int _tmain(int argc, std::TSTRING argv[]) {
 
 	std::_tcout << std::endl << TAG_NORMAL << _T("A sair do programa cliente...") << std::endl << std::endl;
 
-	WaitForSingleObject(currentUser.hThread, INFINITE);
-
-	CloseHandle(currentUser.hThread);
 	NamedPipe::close(currentUser);
 
 	return 0;

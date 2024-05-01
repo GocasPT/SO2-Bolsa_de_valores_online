@@ -1,6 +1,16 @@
 ﻿#include "namedPipe.h"
 #include <sstream>
 
+/**
+ * \brief Conectar ao servidor
+ * 
+ * \param user - Estrutura com os dados do utilizador
+ * 
+ * \throw std::runtime_error - Erro ao criar o evento para o overlap I/O
+ * \throw std::runtime_error - Erro ao esperar pelo servidor
+ * \throw std::runtime_error - Erro ao conectar ao servidor
+ * \tparam std::runtime_error - Erro ao criar a thread
+ */
 void NamedPipe::connectToServer(CLIENTE& user) {
 	std::_tcout << _T("A preparar o overlap I/O do named pipe... ");
 	user.hPipeInst.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -38,6 +48,16 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 	std::_tcout << _T("Thread para recber mesagens do servidor criada com sucesso") << std::endl;
 }
 
+/**
+ * \brief Rotina para receber mensagens do servidor
+ * 
+ * \param lpParam - Ponteiro para a estrutura com os dados do utilizador
+ * 
+ * \return 3 - O servidor encerrou
+ * \return -1 - Erro ao ler a mensagem
+ * \return 1 - Autenticação negada
+ * \return 0 - Saiu normalmente
+ */
 DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 	CLIENTE* user = (CLIENTE*)lpParam;
 	MESSAGE msg;
@@ -105,6 +125,14 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 	return 0;
 }
 
+/**
+ * \brief Enviar uma mensagem ao servidor
+ * 
+ * \param user - Estrutura com os dados do utilizador
+ * \param msg - Mensagem a enviar
+ * 
+ * \throw std::runtime_error - Erro ao enviar a mensagem
+ */
 void NamedPipe::send(CLIENTE& user, MESSAGE msg) {
 	BOOL ret;
 	DWORD nBytes;
@@ -118,6 +146,14 @@ void NamedPipe::send(CLIENTE& user, MESSAGE msg) {
 	}
 }
 
+
+/**
+ * \brief Pedir ao servidor para fazer login
+ * 
+ * \param user - Estrutura com os dados do utilizador
+ * \param name - Nome do utilizador
+ * \param password - Password do utilizador
+ */
 void NamedPipe::requestLogin(CLIENTE& user, std::TSTRING name, std::TSTRING password) {
 	try {
 		connectToServer(user);
@@ -139,6 +175,11 @@ void NamedPipe::requestLogin(CLIENTE& user, std::TSTRING name, std::TSTRING pass
 	}
 }
 
+/**
+ * \brief Pedir ao servidor para listar as empresas
+ * 
+ * \param user - Estrutura com os dados do utilizador
+ */
 void NamedPipe::requestList(CLIENTE& user) {
 	try {
 		send(user, { CODE_LISTC , _T('\0') });
@@ -147,6 +188,13 @@ void NamedPipe::requestList(CLIENTE& user) {
 	}
 }
 
+/**
+ * \brief Pedir ao servidor para comprar ações
+ * 
+ * \param user - Estrutura com os dados do utilizador
+ * \param company - Nome da empresa
+ * \param numOfStocks - Número de ações a comprar
+ */
 void NamedPipe::requestBuy(CLIENTE& user, std::TSTRING company, DWORD numOfStocks) {
 	try {
 		std::_tstringstream ss;
@@ -162,6 +210,13 @@ void NamedPipe::requestBuy(CLIENTE& user, std::TSTRING company, DWORD numOfStock
 	}
 }
 
+/**
+ * \brief Pedir ao servidor para vender ações
+ * 
+ * \param user - Estrutura com os dados do utilizador
+ * \param company - Nome da empresa
+ * \param numOfStocks - Número de ações a vender
+ */
 void NamedPipe::requestSell(CLIENTE& user, std::TSTRING company, DWORD numOfStocks) {
 	try {
 		std::_tstringstream ss;
@@ -177,6 +232,11 @@ void NamedPipe::requestSell(CLIENTE& user, std::TSTRING company, DWORD numOfStoc
 	}
 }
 
+/**
+ * \brief Pedir ao servidor para consultar o saldo
+ * 
+ * \param user - Estrutura com os dados do utilizador
+ */
 void NamedPipe::requestBalance(CLIENTE& user) {
 	try {
 		send(user, { CODE_BALANCE, _T('\0')});
@@ -185,7 +245,25 @@ void NamedPipe::requestBalance(CLIENTE& user) {
 	}
 }
 
+/**
+ * \brief Terminar e fechar tudo que é relacionado com o named pipe
+ * 
+ * \param user - Estrutura com os dados do utilizador
+ */
 void NamedPipe::close(CLIENTE& user) {
+	CancelIo(user.hPipeInst.hPipe);
+
+	WaitForSingleObject(user.hThread, INFINITE);
+
+	CloseHandle(user.hThread);
+
+	if (!DisconnectNamedPipe(user.hPipeInst.hPipe)) {
+		/*std::stringstream ss;
+		ss << "Erro ao desconectar o named pipe (" << GetLastError() << ")";
+		throw std::runtime_error(ss.str());*/
+		std::_tcout << TAG_ERROR << TEXT("Erro ao desconectar o named pipe") << std::endl;
+	}
+
 	CloseHandle(user.hPipeInst.hPipe);
 	CloseHandle(user.hPipeInst.hEvent);
 }
