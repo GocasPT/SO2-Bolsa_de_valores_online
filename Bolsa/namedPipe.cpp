@@ -64,7 +64,7 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 					std::_tcout << _T("Thread de comunicação com cliente criada com sucesso") << std::endl;
 				} else {
 					//TODO: check if need to do something more
-					send(data->hPipeInst, { CODE_FULL, _T('\0') });
+					//send(data->hPipeInst, { CODE_FULL, _T('\0') });
 					user.connected = false;
 				}
 				
@@ -135,6 +135,7 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 			std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] A comunicar com o cliente ") << data->myUser->name << std::endl;
 
 			//TODO: send message to client (its connected and talking with)
+			// send(data->myUser->hPipeInst, { CODE_FULL, _T('\0') });
 
 			while (data->isRunning) {
 				ret = ReadFile(data->myUser->hPipeInst, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
@@ -167,6 +168,8 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 							ss.clear();
 							ss.flush();
 						}
+
+						send(data->myUser->hPipeInst, { CODE_LISTC_ITEM, _T('\0') });
 
 						break;
 					} // !CODE_LISTC
@@ -201,6 +204,7 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 							//TODO: update data
 							data->myUser->balance -= company->pricePerStock * amount;
 							company->numFreeStocks -= amount;
+							//TODO: create "stockWallterManager" model
 							//TODO: data->myUser->stockWallet.push_back({ companyName, amount });
 							_tcscpy_s(msg.data, _T("Compra efetuada com sucesso"));
 						}
@@ -232,7 +236,7 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 						if (company == nullptr)
 							_tcscpy_s(msg.data, _T("Empresa não encontrada"));
 
-						//TODO
+						//TODO: create "stockWallterManager" model
 
 						send(data->myUser->hPipeInst, msg);
 

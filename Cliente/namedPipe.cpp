@@ -53,10 +53,10 @@ void NamedPipe::connectToServer(CLIENTE& user) {
  * 
  * \param lpParam - Ponteiro para a estrutura com os dados do utilizador
  * 
- * \return 3 - O servidor encerrou
- * \return -1 - Erro ao ler a mensagem
- * \return 1 - Autenticação negada
  * \return 0 - Saiu normalmente
+ * \return 1 - Autenticação negada
+ * \return -1 - Erro ao ler a mensagem
+ * \return 3 - O servidor encerrou
  */
 DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 	CLIENTE* user = (CLIENTE*)lpParam;
@@ -66,6 +66,7 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 
 	std::_tcout << _T("A espera de autenticação... ");
 
+	//TODO: exit doesnt work 100%
 	while (user->runnig) {
 		ret = ReadFile(user->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user->hPipeInst.overlap);
 		if (!ret || !nBytes) {
@@ -109,7 +110,11 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 
 			case CODE_LISTC_ITEM:
 				//TODO: Show item from list companies (table mode)
-				std::_tcout << std::endl << msg.data;
+				std::_tcout << msg.data << std::endl;
+
+				if (_tcscmp(msg.data, _T("\0")) != 0)
+					continue;
+
 				break;
 
 			case CODE_BALANCE:
@@ -120,6 +125,9 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 				std::_tcout << TAG_NORMAL << msg.data << std::endl; //TODO: change tag (server tag or feedback tag)
 				break;
 		}
+
+		//TODO: check if is in this position
+		SetEvent(user->hEventConsole); //TODO: throw in erro [?]
 	}
 
 	return 0;
@@ -252,6 +260,7 @@ void NamedPipe::requestBalance(CLIENTE& user) {
  */
 void NamedPipe::close(CLIENTE& user) {
 	CancelIo(user.hPipeInst.hPipe);
+	SetEvent(user.hPipeInst.hEvent);
 
 	WaitForSingleObject(user.hThread, INFINITE);
 

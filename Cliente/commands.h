@@ -5,6 +5,7 @@
 #include "cliente.h"
 #include <vector>
 
+#define CMD_HRLP _T("help")
 #define CMD_LOGIN _T("login")
 #define CMD_LISTC _T("listc")
 #define CMD_BUY _T("buy")

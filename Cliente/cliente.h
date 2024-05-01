@@ -21,6 +21,8 @@ typedef struct {
 	PIPE_INST hPipeInst;
 	DWORD pipeMode;
 	HANDLE hThread;
+
+	HANDLE hEventConsole; // Evento para desbloquear a (thread do) console
 	bool runnig;
 } CLIENTE;
 

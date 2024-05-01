@@ -11,11 +11,22 @@
  * \return - true se o comando for válido, false caso contrário
  */
 bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
+	bool valid = false;
+
+	if (!args[0].compare(CMD_HRLP)) {
+		//TODO: help command
+		std::_tcout << TAG_WARNING << _T("Comando de ajuda não implementado") << std::endl;
+
+		SetEvent(userData.hEventConsole); //TODO: throw in erro [?]
+
+		valid = true;
+	}
+
 	/*
 	* Comando: Login
 	* Formato: login <username> <password>
 	*/
-	if (!args[0].compare(CMD_LOGIN)) {
+	else if (!args[0].compare(CMD_LOGIN)) {
 		if (args.size() != 3)
 			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 				CMD_LOGIN << _T(" <username> <password>") << std::endl << std::endl;
@@ -26,7 +37,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 		else
 			NamedPipe::requestLogin(userData, args[1], args[2]);
 			
-		return true;
+		valid = true;
 	}
 
 	/*
@@ -38,13 +49,15 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") <<
 				CMD_EXIT << std::endl << std::endl;
 
-		return true;
+		SetEvent(userData.hEventConsole);
+		userData.runnig = false;
+		valid = true;
 	}
 
 	// Se não estiver autenticado, não pode executar os comandos seguintes
 	else if (!userData.logged) {
 		std::_tcout << TAG_WARNING << _T("Efetua o login primeiro") << std::endl;
-		return true;
+		valid = true;
 	}
 
 	/*
@@ -59,7 +72,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 		else
 			NamedPipe::requestList(userData);
 
-		return true;
+		valid = true;
 	}
 
 	/*
@@ -74,7 +87,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 		else
 			NamedPipe::requestBuy(userData, args[1], std::stoi(args[2]));
 
-			return true;
+		valid = true;
 	}
 
 	/*
@@ -89,7 +102,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 		else
 			NamedPipe::requestSell(userData, args[1], std::stoi(args[2]));
 
-			return true;
+		valid = true;
 	}
 
 	/*
@@ -104,10 +117,15 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 		else
 			NamedPipe::requestBalance(userData);
 
-			return true;
+		valid = true;
 	}
 
-	return false;
+	if (valid) {
+		WaitForSingleObject(userData.hEventConsole, INFINITE);
+		ResetEvent(userData.hEventConsole);
+	}
+
+	return valid;
 }
 
 /**
