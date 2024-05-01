@@ -20,12 +20,6 @@
 #define CODE_GENERIC_FEEDBACK 7
 
 typedef struct {
-	OVERLAPPED overlap;
-	HANDLE hReciverPipe;
-	bool connected; //TODO: what is this for?
-} PIPE_INST;
-
-typedef struct {
 	DWORD code;
 	TCHAR data[MAX];
 } MESSAGE;

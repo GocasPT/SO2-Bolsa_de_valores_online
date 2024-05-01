@@ -11,7 +11,7 @@ namespace NamedPipe {
 	bool auth(BOLSA& servidor, USER &loginUser);
 	DWORD WINAPI reciverRoutine(LPVOID lpParam);
 	DWORD WINAPI userRoutine(LPVOID lpParam);
-	void send(HANDLE hReciverPipe, MESSAGE msg);
+	void send(HANDLE hPipeInst, MESSAGE msg);
 	void close(BOLSA& servidor);
 }
 

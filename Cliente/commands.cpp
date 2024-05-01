@@ -106,13 +106,15 @@ void cmd::consoleRoutine(CLIENTE& user) {
 	std::vector<std::TSTRING> args;
 	std::_tstringstream ss;
 
-	//TODO: change this for flag (any error, break loop → for safe) 
 	do {
 		args.clear();
 		ss.clear();
 
 		std::_tcout << _T(">> ");
 		std::getline(std::_tcin, input);
+
+		if (input.empty())
+			continue;
 
 		ss << input;
 		while (ss >> input)
@@ -122,5 +124,5 @@ void cmd::consoleRoutine(CLIENTE& user) {
 			std::_tcout << TAG_WARNING << _T("Comando inválido") << std::endl;
 			continue;
 		}
-	} while (input.compare(CMD_EXIT));
+	} while (input.compare(CMD_EXIT) != 0 && user.runnig);
 }

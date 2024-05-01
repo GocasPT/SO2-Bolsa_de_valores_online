@@ -6,7 +6,7 @@
 #include <io.h>
 
 bool checkServerIsRunnig() {
-	HANDLE hPipeTest = CreateNamedPipe(PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, PIPE_TIMEOUT, NULL);
+	HANDLE hPipeTest = CreateNamedPipe(PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, PIPE_TIMEOUT, NULL);
 	if (GetLastError() == ERROR_ALREADY_EXISTS) {
 		CloseHandle(hPipeTest);
 		return true;
@@ -30,15 +30,18 @@ int _tmain(int argc, std::TSTRING argv[]) {
 		exit(-1);
 	}
 
-	currentUser.tContinue = true;
+	currentUser.runnig = true;
 	currentUser.logged = false;
+	currentUser.inQueue = false;
 	std::_tcout << TAG_NORMAL << TEXT("Executa o comando \'") << CMD_LOGIN << _T("\' para puder ligar ao servidor") << std::endl;
 
 	cmd::consoleRoutine(currentUser);
 
 	std::_tcout << std::endl << TAG_NORMAL << _T("A sair do programa cliente...") << std::endl << std::endl;
 
-	//TODO: Close all handles, thread, etc
+	WaitForSingleObject(currentUser.hThread, INFINITE);
+
+	CloseHandle(currentUser.hThread);
 	NamedPipe::close(currentUser);
 
 	return 0;

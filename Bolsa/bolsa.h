@@ -12,7 +12,7 @@
 
 //TODO: check this struct
 typedef struct USER : USER_DATA {
-	HANDLE hReciverPipe; // Handle of the cliente pipe
+	HANDLE hPipeInst; // Handle of the cliente pipe
 } USER;
 
 typedef std::vector<USER> USER_LIST;
@@ -24,6 +24,7 @@ typedef struct {
 	bool& isRunning;
 	USER_LIST& userList;
 	USER_QUEUE& userQueue;
+	COMPANY_LIST& companyList;
 	USER* myUser;
 	CRITICAL_SECTION& cs;
 } TDATA;
@@ -52,7 +53,7 @@ typedef struct {
 	HANDLE hEvent; // Event to triggerto update the shared memory
 
 	/* NAMED PIPE */
-	HANDLE hReciverPipe; // Current reciver pipe
+	HANDLE hPipeInst; // Current reciver pipe
 	HANDLE hReciverThread; // Reciver thread
 	HANDLE_LIST hUsersThreadList; // Thread for comunication with clients
 	HANDLE_LIST hUsersList; // List of clients connected

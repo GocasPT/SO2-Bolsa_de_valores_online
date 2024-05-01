@@ -2,10 +2,17 @@
 #include <sstream>
 
 void NamedPipe::connectToServer(CLIENTE& user) {
-	/*TODO:
-	  - Connect to server
-	  - Create thread to receive messages
-	*/
+	std::_tcout << _T("A preparar o overlap I/O do named pipe... ");
+	user.hPipeInst.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (user.hPipeInst.hEvent == NULL) {
+		std::stringstream ss;
+		ss << "Erro ao criar o evento para o overlap I/O (" << GetLastError() << ")";
+		throw std::runtime_error(ss.str());
+	}
+
+	ZeroMemory(&user.hPipeInst.overlap, sizeof(OVERLAPPED));
+	user.hPipeInst.overlap.hEvent = user.hPipeInst.hEvent;
+	std::_tcout << _T("Overlap I/O preparado") << std::endl;
 
 	std::_tcout << _T("A conectar ao servidor...");
 	if (!WaitNamedPipe(PIPE_BOLSA_NAME, NMPWAIT_WAIT_FOREVER)) {
@@ -14,16 +21,15 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 		throw std::runtime_error(ss.str());
 	}
 
-	user.hReciverPipe = CreateFile(PIPE_BOLSA_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	//if (user.hPipe == INVALID_HANDLE_VALUE) {
-	if (user.hReciverPipe == NULL) {
+	user.hPipeInst.hPipe = CreateFile(PIPE_BOLSA_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED , NULL);
+	if (user.hPipeInst.hPipe == NULL) {
 		std::stringstream ss;
 		ss << "Erro ao conectar ao servidor (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
 	}
 	std::_tcout << _T(" Conectado ao servidor") << std::endl;
 
-	user.hThread = CreateThread(NULL, 0, reciverMessage, &user, 0, NULL); //TODO: Check parameter pointer
+	user.hThread = CreateThread(NULL, 0, reciverMessage, &user, 0, NULL);
 	if (user.hThread == NULL) {
 		std::stringstream ss;
 		ss << "Erro ao criar a thread (" << GetLastError() << ")";
@@ -33,32 +39,31 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 }
 
 DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
-	/*TODO:
-	  x Cast lpParam → struct
-	  x Receive message from server
-	  - Show message to user
-	*/
-
-	CLIENTE* user = (CLIENTE*)lpParam; //TODO: Change to user struct maybe
+	CLIENTE* user = (CLIENTE*)lpParam;
 	MESSAGE msg;
 	BOOL ret;
 	DWORD nBytes;
 
-	Sleep(2000); //TOPO: remove this after overlapped IO implementation
+	std::_tcout << _T("A espera de autenticação... ");
 
-	while (user->tContinue) {
-
-		ret = ReadFile(user->hReciverPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
+	while (user->runnig) {
+		ret = ReadFile(user->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user->hPipeInst.overlap);
 		if (!ret || !nBytes) {
 			if (GetLastError() == ERROR_BROKEN_PIPE) {
 				std::_tcout << TAG_NORMAL << TEXT("O servidor encerrou. A sair do programa...") << std::endl;
-				user->tContinue = false;
+				user->runnig = false;
 				user->logged = false;
 				return 3;
 			}
 
-			std::_tcout << TAG_ERROR << TEXT("Erro ao ler a mensagem") << std::endl;
-			return -1;
+			else if (GetLastError() == ERROR_IO_PENDING) {
+				WaitForSingleObject(user->hPipeInst.hEvent, INFINITE);
+			}
+
+			else {
+				std::_tcout << TAG_ERROR << TEXT("Erro ao ler a mensagem") << std::endl;
+				return -1;
+			}
 		}
 
 		// Se não tiver feito login, ignora todas as mensagens exceto o login
@@ -68,29 +73,31 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 		switch (msg.code) {
 			case CODE_LOGIN:
 				user->logged = true;
-				std::_tcout << std::endl << TAG_NORMAL << TEXT("User autnenticado. Bem-vindo ") << user->name << _T("!") << std::endl;
+				std::_tcout << TEXT("User autnenticado. Bem-vindo ") << user->name << _T("!") << std::endl;
 				break;
 
 			case CODE_DENID:
-				std::_tcout << std::endl << TAG_ERROR << TEXT("Autenticação negada. Verifique as credência novamente") << std::endl;
+				std::_tcout << TEXT("Autenticação negada. Verifique as credência novamente") << std::endl;
 				return 1;
 
 			case CODE_FULL:
-				std::_tcout << std::endl << TAG_ERROR << TEXT("Servidor cheio. Tente mais tarde") << std::endl;
-				return 2; //TODO: remove this, is wating util free slot appear OR user close OR server close
+				user->inQueue = true;
+				std::_tcout << TEXT("Servidor cheio, estás na fila de espera. Tens permissão para utilizar alguns comandos") << std::endl;
+				break;
+
+			//TODO: recevie free_slot message (its connected and talking with)
 
 			case CODE_LISTC_ITEM:
-				//TODO: Show item from list companies
-				std::_tcout << std::endl << msg.data << std::endl;
+				//TODO: Show item from list companies (table mode)
+				std::_tcout << std::endl << msg.data;
 				break;
 
 			case CODE_BALANCE:
-				//TOOD: Show balance and update local balance (to show)
-				std::_tcout << std::endl << msg.data << std::endl;
+				std::_tcout << _T("O seu saldo é ") << msg.data << std::endl;
 				break;
 
 			case CODE_GENERIC_FEEDBACK:
-				std::_tcout << std::endl << msg.data << std::endl;
+				std::_tcout << TAG_NORMAL << msg.data << std::endl; //TODO: change tag (server tag or feedback tag)
 				break;
 		}
 	}
@@ -102,23 +109,12 @@ void NamedPipe::send(CLIENTE& user, MESSAGE msg) {
 	BOOL ret;
 	DWORD nBytes;
 
-	ret = WriteFile(user.hReciverPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
+	//TODO: Add overlapped I/O maybe
+	ret = WriteFile(user.hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
 	if (!ret || !nBytes) {
 		std::stringstream ss;
 		ss << "Erro ao enviar a mensagem [ " << ret << " " << nBytes << "] ()" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
-	}
-
-	//TODO: Improve this (gona be cool 😎)
-	if (!user.logged) {
-		std::_tcout << _T("A espera de autenticação");
-
-		while (!user.logged) {
-			std::_tcout << _T(".");
-			Sleep(1000);
-		}
-
-		//std::_tcout << std::endl;
 	}
 }
 
@@ -136,6 +132,8 @@ void NamedPipe::requestLogin(CLIENTE& user, std::TSTRING name, std::TSTRING pass
 		_tcscpy_s(msg.data, ss.str().c_str());
 
 		send(user, msg);
+
+		while (!user.logged || user.inQueue) {} // Espera pela autenticação e que não esteja na fila para libertar a consola
 	} catch (std::runtime_error& e) {
 		std::_tcout << TAG_ERROR << e.what() << std::endl;
 	}
@@ -188,9 +186,6 @@ void NamedPipe::requestBalance(CLIENTE& user) {
 }
 
 void NamedPipe::close(CLIENTE& user) {
-	/*TODO
-	  - Close pipe
-	  - Terminate thread
-	  - etc
-	*/
+	CloseHandle(user.hPipeInst.hPipe);
+	CloseHandle(user.hPipeInst.hEvent);
 }

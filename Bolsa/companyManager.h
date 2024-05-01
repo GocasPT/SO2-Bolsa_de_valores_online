@@ -7,7 +7,7 @@
 namespace CompanyManager {
 	void addCompany(BOLSA &servidor, std::TSTRING name, std::TSTRING numOfStock, std::TSTRING pricePerStock);
 	void listCompanies(BOLSA &servidor);
-	COMPANY* getCompany(BOLSA &servidor, std::TSTRING name);
+	COMPANY* getCompany(COMPANY_LIST& companyList, std::TSTRING name);
 	void updateStock(BOLSA &servidor, std::TSTRING name, std::TSTRING pricePerStock);
 }
 

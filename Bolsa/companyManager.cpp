@@ -3,7 +3,7 @@
 
 //TODO: check
 void CompanyManager::addCompany(BOLSA& servidor, std::TSTRING name, std::TSTRING numOfStock, std::TSTRING pricePerStock) {
-	if (getCompany(servidor, name) != nullptr) {
+	if (getCompany(servidor.companyList, name) != nullptr) {
 		std::_tcout << TAG_WARNING << _T("Empresa já existe") << std::endl;
 		return;
 	}
@@ -33,13 +33,14 @@ void CompanyManager::listCompanies(BOLSA& servidor) {
 	std::_tcout << std::endl;
 }
 
-COMPANY* CompanyManager::getCompany(BOLSA& servidor, std::TSTRING name) {
-	/*TODO
-	  - search for company
-	  - return company
-	*/
+COMPANY* CompanyManager::getCompany(COMPANY_LIST& companyList, std::TSTRING name) {
+	auto it = std::find_if(companyList.begin(), companyList.end(),
+		[name](COMPANY company) { return name.compare(company.name) == 0; });
 
-	return nullptr;
+	if (it == companyList.end())
+		return nullptr;
+
+	return &(*it);
 }
 
 void CompanyManager::updateStock(BOLSA& servidor, std::TSTRING name, std::TSTRING pricePerStock) {

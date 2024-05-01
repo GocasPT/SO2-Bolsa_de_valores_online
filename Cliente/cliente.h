@@ -9,14 +9,19 @@
 #define TAG_WARNING _T("[WARNING] ")
 
 typedef struct {
+	HANDLE hPipe;
+	OVERLAPPED overlap;
+	HANDLE hEvent;
+} PIPE_INST;
+
+typedef struct {
 	bool logged;
+	bool inQueue;
 	TCHAR name[MAX];
-	TCHAR password[MAX]; //TODO: maybe remove this (just request to server)
-	float balance; //TODO: maybe remove this (just request to server)
-	HANDLE hReciverPipe;
+	PIPE_INST hPipeInst;
 	DWORD pipeMode;
 	HANDLE hThread;
-	bool tContinue; //TODO: change name
+	bool runnig;
 } CLIENTE;
 
 #endif // !CLIENTE_H

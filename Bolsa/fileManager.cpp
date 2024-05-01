@@ -1,4 +1,4 @@
-#include "fileManager.h"
+﻿#include "fileManager.h"
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -19,7 +19,7 @@ void Files::read_files(BOLSA& servidor) {
 			ss >> user.name >> user.password >> user.balance;
 			user.connected = false;
 			user.inQueue = false;
-			user.hReciverPipe = INVALID_HANDLE_VALUE;
+			user.hPipeInst = INVALID_HANDLE_VALUE;
 
 			servidor.userList.push_back(user);
 			ss.clear();
@@ -28,7 +28,7 @@ void Files::read_files(BOLSA& servidor) {
 	}
 	else {
 		std::stringstream ss;
-		ss << "Erro ao abrir o ficeiro '" << FILE_USERS << "'";
+		ss << "Erro ao abrir o ficeiro 'users.txt'"; //TODO: use FILE_USERS [UNICODE → ANSII]
 		throw std::runtime_error(ss.str());
 	}
 	
@@ -56,7 +56,7 @@ void Files::read_files(BOLSA& servidor) {
 	}
 	else {
 		std::stringstream ss;
-		ss << "Erro ao abrir o ficeiro '" << FILE_COMPANIES << "'";
+		ss << "Erro ao abrir o ficeiro 'companies.txt'"; //TODO: use FILE_COMPANIES [UNICODE → ANSII]
 		throw std::runtime_error(ss.str());
 	}
 	std::_tcout << _T("Ficheiro '") << FILE_COMPANIES << _T("' lido com sucesso (2/") << TOTAL_FILES << _T(")") << std::endl;

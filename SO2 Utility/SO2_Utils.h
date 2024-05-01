@@ -47,4 +47,6 @@ typedef struct {
 	float pricePerStock;
 } COMPANY;
 
+//TODO: add "drawTable" function
+
 #endif // !SO2_UTILS_H
