@@ -3,6 +3,7 @@
 #include "registry.h"
 #include "commands.h"
 #include "fileManager.h"
+#include "companyManager.h"
 #include <fcntl.h>
 #include <io.h>
 
@@ -19,38 +20,39 @@ bool checkServerRunning() {
 }
 
 void closeServer(BOLSA& servidor) {
-	std::_tcout << std::endl <<
-		TAG_NORMAL << _T("A fechar o servidor...") << std::endl << std::endl;
+	std::_tcout << std::endl << TAG_NORMAL << _T("A fechar o servidor...") << std::endl << std::endl;
 
 	servidor.isRunning = false;
 
 	//TODO: PLACEHOLDER
-	HANDLE hTemp = CreateFile(PIPE_BOLSA_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-	CloseHandle(hTemp);
+	//HANDLE hTemp = CreateFile(PIPE_BOLSA_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	//CloseHandle(hTemp);
 	//TODO: PLACEHOLDER
 
+	CompanyManager::close(servidor);
 	SharedMemory::close(servidor);
 	NamedPipe::close(servidor);
 	Files::write_files(servidor);
 }
 
 void configServer(BOLSA &servidor) {
-	std::_tcout << TAG_NORMAL << _T("A inicial servidor...") << std::endl << std::endl;
+	std::_tcout << TAG_NORMAL << _T("A configurar o servidor servidor...") << std::endl << std::endl;
+
+	servidor.isRunning = true;
+	servidor.isPaused = false;
 
 	try {
 		Files::read_files(servidor);
 		Registry::config(servidor);
 		SharedMemory::config(servidor);
 		NamedPipe::config(servidor);
-	}
-	catch (std::runtime_error& e) {
+		CompanyManager::config(servidor);
+	} catch (std::runtime_error& e) {
 		std::_tcout << TAG_ERROR << e.what() << std::endl;
 		closeServer(servidor);
 	}
 
-	//TODO: check if all handlers are not NULL (error code)
-
-	servidor.isRunning = true;
+	std::_tcout << TAG_NORMAL << _T("Servidor configurado com sucesso") << std::endl << std::endl;
 }
 
 int _tmain(int argc, std::TSTRING argv[]) {
@@ -62,7 +64,7 @@ int _tmain(int argc, std::TSTRING argv[]) {
 #endif 
 
 	if (checkServerRunning()) {
-		std::_tcout << TAG_ERROR << _T("Ja existe uma instancia do programa \'Bolsa\' em execução") << std::endl;
+		std::_tcout << TAG_ERROR << _T("Ja existe uma instancia do programa 'Bolsa' em execução") << std::endl;
 		exit(-1);
 	}
 

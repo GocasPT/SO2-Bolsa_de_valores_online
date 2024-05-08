@@ -5,10 +5,14 @@
 #include "bolsa.h"
 
 namespace CompanyManager {
-	void addCompany(BOLSA &servidor, std::TSTRING name, std::TSTRING numOfStock, std::TSTRING pricePerStock);
+	void config(BOLSA& servidor);
+	void addCompany(BOLSA &servidor, std::TSTRING name, DWORD numOfStock, DWORD pricePerStock);
 	void listCompanies(BOLSA &servidor);
 	COMPANY* getCompany(COMPANY_LIST& companyList, std::TSTRING name);
-	void updateStock(BOLSA &servidor, std::TSTRING name, std::TSTRING pricePerStock);
+	void updateStock(BOLSA &servidor, std::TSTRING name, DWORD pricePerStock);
+	void pauseCompaniesOps(BOLSA& servidor, int time);
+	DWORD WINAPI timerRoutine(LPVOID lpParam);
+	void close(BOLSA& servidor);
 }
 
 #endif // !COMPANY_MANAGER_H

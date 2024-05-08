@@ -10,7 +10,9 @@
 #define TAG_ERROR _T("[ERRO] ")
 #define TAG_WARNING _T("[WARNING] ")
 
-//TODO: check this struct
+#define EVENT_CONSOLE _T("ServerConsole")
+#define EVENT_TIMER _T("ServerTimer")
+
 typedef struct USER : USER_DATA {
 	HANDLE hPipeInst; // Handle of the cliente pipe
 } USER;
@@ -22,6 +24,7 @@ typedef std::vector<HANDLE> HANDLE_LIST;
 
 typedef struct {
 	bool& isRunning;
+	bool& isPaused;
 	USER_LIST& userList;
 	USER_QUEUE& userQueue;
 	COMPANY_LIST& companyList;
@@ -29,14 +32,19 @@ typedef struct {
 	CRITICAL_SECTION& cs;
 } TDATA;
 
+typedef struct {
+	bool* isRunning;
+	bool* isPaused;
+	int time;
+	HANDLE hEvent;
+} TIMER_DATA;
+
 typedef std::vector<TDATA> TDATA_LIST;
 
-//TODO: create new struct for reciverRoutine?
-
-//TODO: check if is missing any field
 typedef struct {
-	/* GENERAL	*/
+	/* GENERAL */
 	bool isRunning;
+	bool isPaused;
 
 	/* REGISTRY */
 	HKEY hKey; //TODO: we need this?
@@ -47,6 +55,8 @@ typedef struct {
 
 	/* COMPANY MANAGER */
 	std::vector<COMPANY> companyList; // List of companies
+	HANDLE hTimerThread; // Timer thread
+	TIMER_DATA timerData; // Data for the timer
 
 	/* SHARED MEMORY */
 	HANDLE hSharedMemory; // Handle shared memory

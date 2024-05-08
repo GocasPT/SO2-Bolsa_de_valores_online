@@ -70,19 +70,20 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 	while (user->runnig) {
 		ret = ReadFile(user->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user->hPipeInst.overlap);
 		if (!ret || !nBytes) {
-			if (GetLastError() == ERROR_BROKEN_PIPE) {
-				std::_tcout << TAG_NORMAL << TEXT("O servidor encerrou. A sair do programa...") << std::endl;
+			DWORD error = GetLastError();
+			if (error == ERROR_BROKEN_PIPE || error == ERROR_PIPE_NOT_CONNECTED) {
+				std::_tcout << TAG_NORMAL << TEXT("O servidor encerrou. Precione o 'Enter' para sair do programa...") << std::endl;
 				user->runnig = false;
 				user->logged = false;
 				return 3;
 			}
 
-			else if (GetLastError() == ERROR_IO_PENDING) {
+			else if (error == ERROR_IO_PENDING) {
 				WaitForSingleObject(user->hPipeInst.hEvent, INFINITE);
 			}
 
 			else {
-				std::_tcout << TAG_ERROR << TEXT("Erro ao ler a mensagem") << std::endl;
+				std::_tcout << TAG_ERROR << TEXT("Erro ao ler a mensagem (") << GetLastError() << _T(")") << std::endl;
 				return -1;
 			}
 		}
@@ -93,6 +94,9 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 
 		switch (msg.code) {
 			case CODE_LOGIN:
+				if (user->logged)
+					break;
+
 				user->logged = true;
 				std::_tcout << TEXT("User autnenticado. Bem-vindo ") << user->name << _T("!") << std::endl;
 				break;

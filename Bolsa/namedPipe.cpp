@@ -27,16 +27,21 @@ void NamedPipe::config(BOLSA& servidor) {
 		throw std::runtime_error(ss.str());
 	}
 
-	std::_tcout << TAG_NORMAL << _T("Configuração do named piep conculida, já está à esperade um cliente para connectar") << std::endl << std::endl;
+	std::_tcout << TAG_NORMAL << _T("Configuração do named piep concluida, já está à esperade um cliente para connectar") << std::endl << std::endl;
 }
 
 DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 	BOLSA* data = (BOLSA*)lpParam;
 	USER loginUser;
 
+	std::_tcout << _T("A espera de um cliente para conectar...") << std::endl;
+
 	try {
 		while (data->isRunning) {
 			if (!ConnectNamedPipe(data->hPipeInst, NULL)) {
+				if (GetLastError() == ERROR_BROKEN_PIPE)
+					break;
+
 				std::stringstream ss;
 				ss << "Erro ao conectar o cliente ao named pipe do servidor (" << GetLastError() << ")";
 				throw std::runtime_error(ss.str());
@@ -50,7 +55,7 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 
 				if (UserManager::addUser(*data, &user)) {
 					user.connected = true;
-					TDATA newTDate = { data->isRunning, data->userList, data->hUsersQueue, data->companyList, &user, data->cs };
+					TDATA newTDate = { data->isRunning, data->isPaused, data->userList, data->hUsersQueue, data->companyList, &user, data->cs };
 					data->tDataList.push_back(newTDate);
 
 					std::_tcout << _T("Criando thread para comunicação com cliente...") << std::endl;
@@ -64,8 +69,8 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 					std::_tcout << _T("Thread de comunicação com cliente criada com sucesso") << std::endl;
 				} else {
 					//TODO: check if need to do something more
-					//send(data->hPipeInst, { CODE_FULL, _T('\0') });
-					user.connected = false;
+					send(data->hPipeInst, { CODE_FULL, _T('\0') });
+					user.connected = false; //TODO: check this
 				}
 				
 			} else {
@@ -88,6 +93,8 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 		data->isRunning = false;
 	}
 
+	std::_tcout << _T("A sair do reciverRoutine...") << std::endl;
+
 	return 0;
 }
 
@@ -99,6 +106,9 @@ bool NamedPipe::auth(BOLSA& servidor, USER& loginUser) {
 	// Lê a mensagem de login do cliente
 	ret = ReadFile(servidor.hPipeInst, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
 	if (!ret || !nBytes) {
+		if (GetLastError() == ERROR_BROKEN_PIPE)
+			return false;
+
 		std::stringstream ss;
 		ss << "Erro ao ler a mensagem do cliente (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
@@ -122,12 +132,13 @@ bool NamedPipe::auth(BOLSA& servidor, USER& loginUser) {
 
 DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 	TDATA* data = (TDATA*)lpParam;
+	static DWORD tIDCount = 1;
 	MESSAGE msg;
 	BOOL ret;
 	DWORD nBytes, tID;
 	std::_tstringstream ss;
 
-	tID = GetCurrentThreadId();
+	tID = tIDCount++;
 	std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Iniciada, pronto para receber pedidos");
 
 	try {
@@ -140,7 +151,8 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 			while (data->isRunning) {
 				ret = ReadFile(data->myUser->hPipeInst, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
 				if (!ret || !nBytes) {
-					if (GetLastError() == ERROR_BROKEN_PIPE)
+					DWORD error = GetLastError();
+					if (error == ERROR_BROKEN_PIPE || error == ERROR_PIPE_NOT_CONNECTED)
 						std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Cliente ") << data->myUser->name << _T(" desconectado") << std::endl;
 					else
 						std::_tcout << std::endl << TAG_ERROR _T("[THREAD ") << tID << _T("] Erro ao ler a mensagem do cliente (") << GetLastError() << _T(")") << std::endl;
@@ -154,32 +166,11 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 				EnterCriticalSection(&data->cs);
 
 				switch (msg.code) {
-					case CODE_LISTC: {
-						for (auto it = data->companyList.begin(); it != data->companyList.end(); it++) {
-							ss.str(std::TSTRING());
-
-							ss << _T("Nome: ") << it->name << _T(" | Nº de Ações: ") << it->numFreeStocks << _T(" | Preço por Ação: ") << it->pricePerStock;
-
-							msg.code = CODE_LISTC_ITEM;
-							_tcscpy_s(msg.data, ss.str().c_str());
-
-							send(data->myUser->hPipeInst, msg);
-
-							ss.clear();
-							ss.flush();
-						}
-
-						send(data->myUser->hPipeInst, { CODE_LISTC_ITEM, _T('\0') });
-
+					case CODE_LISTC: 
+						responseList(*data);
 						break;
-					} // !CODE_LISTC
 						
 					case CODE_BUY: {
-						/*TODO
-							  x check user balance, company, amount, etc
-							  - update user stock wallet, balance and data
-							  x send feedback to user
-							*/
 						ss.str(msg.data);
 
 						std::TSTRING companyName;
@@ -188,41 +179,11 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 						DWORD amount;
 						ss >> amount;
 
-						float balance = data->myUser->balance;
-						COMPANY* company = CompanyManager::getCompany(data->companyList, companyName);
-
-						if (company == nullptr)
-							_tcscpy_s(msg.data, _T("Empresa não encontrada"));
-
-						else if (balance < company->pricePerStock * amount)
-							_tcscpy_s(msg.data, _T("Saldo insuficiênte"));
-
-						else if (company->numFreeStocks < amount)
-							_tcscpy_s(msg.data, _T("Ações insuficientes"));
-
-						else {
-							//TODO: update data
-							data->myUser->balance -= company->pricePerStock * amount;
-							company->numFreeStocks -= amount;
-							//TODO: create "stockWallterManager" model
-							//TODO: data->myUser->stockWallet.push_back({ companyName, amount });
-							_tcscpy_s(msg.data, _T("Compra efetuada com sucesso"));
-						}
-
-						msg.code = CODE_GENERIC_FEEDBACK;
-
-						send(data->myUser->hPipeInst, msg);
-
+						responseBuy(*data, companyName, amount);
 						break;
 					} // !CODE_BUY
-
+						
 					case CODE_SELL: {
-						/*TODO
-						  - check if user have this stock
-						  - check if user have this or more amount of stock
-						  - update data
-						  - send feedback to user
-						*/
 						ss.str(msg.data);
 
 						std::TSTRING companyName;
@@ -231,32 +192,16 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 						DWORD amount;
 						ss >> amount;
 
-						COMPANY* company = CompanyManager::getCompany(data->companyList, companyName);
-
-						if (company == nullptr)
-							_tcscpy_s(msg.data, _T("Empresa não encontrada"));
-
-						//TODO: create "stockWallterManager" model
-
-						send(data->myUser->hPipeInst, msg);
-
+						responseSell(*data, companyName, amount);
 						break;
 					} // !CODE_SELL
 
-					case CODE_BALANCE: {
-						ss.str(std::TSTRING());
-
-						ss << data->myUser->balance;
-
-						msg.code = CODE_BALANCE;
-						ss >> msg.data;
-
-						send(data->myUser->hPipeInst, msg);
-
+					case CODE_BALANCE:
+						responseBalance(*data);
 						break;
-					} // !CODE_BALANCE
 				}
 
+				//TODO: improve this (when enter in critical secntion? When recive message OR get/set data?)
 				LeaveCriticalSection(&data->cs);
 
 				ss.clear();
@@ -294,30 +239,139 @@ void NamedPipe::send(HANDLE hPipeInst, MESSAGE msg) {
 	}
 }
 
+//TODO: move to this
+void NamedPipe::responseList(TDATA& data) {
+	MESSAGE msg;
+	std::_tstringstream ss;
+
+	if (data.companyList.empty()) {
+		send(data.myUser->hPipeInst, { CODE_LISTC_ITEM, _T("Nenhuma empresa disponível") });
+	} else {
+		for (auto it = data.companyList.begin(); it != data.companyList.end(); it++) {
+			ss.str(std::TSTRING());
+
+			ss << _T("Nome: ") << it->name << _T(" | Nº de Ações: ") << it->numFreeStocks << _T(" | Preço por Ação: ") << it->pricePerStock;
+
+			msg.code = CODE_LISTC_ITEM;
+			_tcscpy_s(msg.data, ss.str().c_str());
+
+			send(data.myUser->hPipeInst, msg);
+
+			ss.clear();
+			ss.flush();
+		}
+	}
+
+	send(data.myUser->hPipeInst, { CODE_LISTC_ITEM, _T('\0') });
+}
+
+//TODO: move to this
+void NamedPipe::responseBuy(TDATA& data, std::TSTRING companyName, DWORD amount) {
+	/*TODO
+	  x check if buy/sell is open
+	  x check user balance, company, amount, etc
+	  - update user stock wallet, balance and data
+	  x send feedback to user
+	*/
+
+	if (data.isPaused) {
+		send(data.myUser->hPipeInst, { CODE_GENERIC_FEEDBACK, _T("Compra/Venda de ações suspensa") });
+		return;
+	}
+
+	MESSAGE msg;
+	// std::_tstringstream ss;
+
+	float balance = data.myUser->balance;
+	COMPANY* company = CompanyManager::getCompany(data.companyList, companyName);
+
+	if (company == nullptr)
+		_tcscpy_s(msg.data, _T("Empresa não encontrada"));
+
+	else if (balance < company->pricePerStock * amount)
+		_tcscpy_s(msg.data, _T("Saldo insuficiênte"));
+
+	else if (company->numFreeStocks < amount)
+		_tcscpy_s(msg.data, _T("Ações insuficientes"));
+
+	else {
+		//TODO: update data
+		data.myUser->balance -= company->pricePerStock * amount;
+		company->numFreeStocks -= amount;
+		//TODO: create "stockWallterManager" model
+		//TODO: data->myUser->stockWallet.push_back({ companyName, amount });
+		_tcscpy_s(msg.data, _T("Compra efetuada com sucesso"));
+	}
+
+	msg.code = CODE_GENERIC_FEEDBACK;
+
+	send(data.myUser->hPipeInst, msg);
+}
+
+//TODO: move to this
+void NamedPipe::responseSell(TDATA& data, std::TSTRING companyName, DWORD amount) {
+	/*TODO
+	  x check if buy/sell is open
+	  - check if user have this stock
+	  - check if user have this or more amount of stock
+	  - update data
+	  - send feedback to user
+	*/
+
+	if (data.isPaused) {
+		send(data.myUser->hPipeInst, { CODE_GENERIC_FEEDBACK, _T("Compra/Venda de ações suspensa") });
+		return;
+	}
+
+	MESSAGE msg;
+
+	COMPANY* company = CompanyManager::getCompany(data.companyList, companyName);
+
+	if (company == nullptr)
+		_tcscpy_s(msg.data, _T("Empresa não encontrada"));
+
+	//TODO: create "stockWallterManager" model
+
+	send(data.myUser->hPipeInst, msg);
+}
+
+//TODO: move to this
+void NamedPipe::responseBalance(TDATA& data) {
+	MESSAGE msg;
+	std::_tstringstream ss;
+
+	ss << data.myUser->balance;
+
+	msg.code = CODE_BALANCE;
+	ss >> msg.data;
+
+	send(data.myUser->hPipeInst, msg);
+}
+
 //TODO [DEBUG]: something is throwing an exception
 void NamedPipe::close(BOLSA& servidor) {
 	std::_tcout << _T("A fechar o named pipe do servidor...") << std::endl;
 
-	//TODO: connect to server named pipe to unclock the reciver thread
-
-	for (HANDLE hThread : servidor.hUsersThreadList)
-		WaitForSingleObject(hThread, INFINITE); //TODO: maybe change to WaitForMultipleObjects
-	WaitForSingleObject(servidor.hReciverThread, INFINITE);
-
-	//TODO: maybe show user info in same time
 	for (DWORD i = 0; i < servidor.hUsersList.size(); i++) {
-		std::_tcout << _T("A fecher o pipe do cliente ") << i << _T(" de ") << servidor.hUsersList.size() << std::endl;
+		std::_tcout << _T("A fecher o pipe do cliente ") << i << _T(" de ") << servidor.hUsersList.size();
 		if (!DisconnectNamedPipe(servidor.hUsersList[i])) {
-			std::_tcout << TAG_ERROR << _T("Erro ao fechar o pipe do cliente ") << i << _T(" (") << GetLastError() << _T(")") << std::endl;
+			std::_tcout << std::endl << TAG_ERROR << _T("Erro ao fechar o pipe do cliente ") << i << _T(" (") << GetLastError() << _T(")") << std::endl;
 		}
 
 		CloseHandle(servidor.hUsersThreadList[i]);
 		CloseHandle(servidor.hUsersList[i]);
+
+		std::_tcout << _T(" | Fechado") << std::endl;
 	}
 
-	CloseHandle(servidor.hReciverThread);
-	DeleteCriticalSection(&servidor.cs);
+	WaitForMultipleObjects(servidor.hUsersThreadList.size(), servidor.hUsersThreadList.data(), TRUE, INFINITE);
+
 	CloseHandle(servidor.hPipeInst);
+
+	WaitForSingleObject(servidor.hReciverThread, INFINITE);
+	CloseHandle(servidor.hReciverThread);
+
+	DeleteCriticalSection(&servidor.cs);
 
 	std::_tcout << TAG_NORMAL << _T("Named pipe fechado com sucesso") << std::endl << std::endl;
 }

@@ -7,6 +7,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <vector>
 
 #ifdef UNICODE
 	#define TSTRING wstring
@@ -46,7 +47,5 @@ typedef struct {
 	DWORD numFreeStocks;
 	float pricePerStock;
 } COMPANY;
-
-//TODO: add "drawTable" function
 
 #endif // !SO2_UTILS_H

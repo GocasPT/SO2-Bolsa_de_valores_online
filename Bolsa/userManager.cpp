@@ -3,12 +3,12 @@
 
 //TODO: check
 /**
- * @brief Validar as credênciais do utilizador.
+ * \brief Validar as credênciais do utilizador.
  *
- * @param userList - Lista de utilizadores.
- * @param user - Utilizador a validar.
+ * \param userList - Lista de utilizadores.
+ * \param user - Utilizador a validar.
  * 
- * @return true se o utilizador for válido, false caso contrário.
+ * \sreturn true se o utilizador for válido, false caso contrário.
  */
 bool UserManager::validateUser(const USER_LIST& userList, USER user) {
 	auto it = std::find_if(userList.begin(), userList.end(),
@@ -21,12 +21,12 @@ bool UserManager::validateUser(const USER_LIST& userList, USER user) {
 
 //TODO: check
 /**
- * @brief Adiciona um utilizador ao servidor ou à fila de espera.
+ * \brief Adiciona um utilizador ao servidor ou à fila de espera.
  *
- * @param servidor - Referencia do servidor.
- * @param user - Ponteiro para o utilizador a adicionar.
+ * \param servidor - Referencia do servidor.
+ * \param user - Ponteiro para o utilizador a adicionar.
  * 
- * @return true se o utilizador foi adicionado ao servidor, false se foi adicionado à fila de espera.
+ * \return true se o utilizador foi adicionado ao servidor, false se foi adicionado à fila de espera.
  */
 bool UserManager::addUser(BOLSA& servidor, USER* user) {
 	if (servidor.hUsersList.size() < servidor.maxUsers) {
@@ -42,15 +42,15 @@ bool UserManager::addUser(BOLSA& servidor, USER* user) {
 
 //TODO: check
 /**
- * @brief Remove um utilizador do servidor.
+ * \brief Remove um utilizador do servidor.
  *
- * @param userList - Lista de utilizadores.
- * @param userQueue - Fila de utilizadores.
- * @param user - Utilizador a remover.
+ * \param userList - Lista de utilizadores.
+ * \param userQueue - Fila de utilizadores.
+ * \param user - Utilizador a remover.
  * 
- * @return Ponteiro para o utilizador que ficou em primeiro na fila de espera, ou nullptr se não houver utilizadores na fila.
+ * \return Ponteiro para o utilizador que ficou em primeiro na fila de espera, ou nullptr se não houver utilizadores na fila.
  * 
- * @throw Se o utilizador não for encontrado.
+ * \throw Se o utilizador não for encontrado.
  */
 USER* UserManager::removeUser(USER_LIST& userList, USER_QUEUE& userQueue, USER* user) {
 	auto it = std::find_if(userList.begin(), userList.end(),
@@ -75,9 +75,9 @@ USER* UserManager::removeUser(USER_LIST& userList, USER_QUEUE& userQueue, USER* 
 }
 
 /**
- * @brief Lista todos os utilizadores do servidor.
+ * \brief Lista todos os utilizadores do servidor.
  *
- * @param servidor - Referencia do servidor.
+ * \param servidor - Referencia do servidor.
  */
 void UserManager::listUsers(const BOLSA& servidor) {
 	std::_tcout << _T("Users:") << std::endl;
@@ -98,14 +98,14 @@ void UserManager::listUsers(const BOLSA& servidor) {
 
 //TODO: check
 /**
- * @brief Devolve a referência do utilizador com o nome especificado.
+ * \brief Devolve a referência do utilizador com o nome especificado.
  *
- * @param userList - Lista de utilizadores.
- * @param userName - Nome do utilizador a procurar.
+ * \param userList - Lista de utilizadores.
+ * \param userName - Nome do utilizador a procurar.
  * 
- * @return Referência para o utilizador.
+ * \return Referência para o utilizador.
  * 
- * @throw Se o utilizador não for encontrado.
+ * \throw Se o utilizador não for encontrado.
  */
 USER& UserManager::getUser(USER_LIST& userList, std::TSTRING userName) {
 	auto it = std::find_if(userList.begin(), userList.end(),
@@ -120,11 +120,11 @@ USER& UserManager::getUser(USER_LIST& userList, std::TSTRING userName) {
 //TODO: check
 //TODO: we need this?
 /**
- * @brief Liberta todos os utilizadores do servidor.
+ * \brief Liberta todos os utilizadores do servidor.
  *
  * Esta função deve ser chamada antes de terminar o servidor.
  *
- * @param servidor - Referencia do servidor.
+ * \param servidor - Referencia do servidor.
  */
 void UserManager::releaseUsers(BOLSA& servidor) {
 	USER_LIST& userList = servidor.userList;

@@ -8,6 +8,8 @@
 #define TAG_ERROR _T("[ERRO] ")
 #define TAG_WARNING _T("[WARNING] ")
 
+#define EVENT_CONSOLE _T("ClienteConsole")
+
 typedef struct {
 	HANDLE hPipe;
 	OVERLAPPED overlap;

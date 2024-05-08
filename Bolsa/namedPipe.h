@@ -12,6 +12,10 @@ namespace NamedPipe {
 	DWORD WINAPI reciverRoutine(LPVOID lpParam);
 	DWORD WINAPI userRoutine(LPVOID lpParam);
 	void send(HANDLE hPipeInst, MESSAGE msg);
+	void responseList(TDATA& data);
+	void responseBuy(TDATA& data, std::TSTRING company, DWORD numOfStocks);
+	void responseSell(TDATA& data, std::TSTRING company, DWORD numOfStocks);
+	void responseBalance(TDATA& data);
 	void close(BOLSA& servidor);
 }
 

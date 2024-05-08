@@ -18,7 +18,7 @@ bool checkServerIsRunnig() {
 }
 
 void configServer(CLIENTE& user) {
-	user.hEventConsole = CreateEvent(NULL, TRUE, FALSE, NULL);
+	user.hEventConsole = CreateEvent(NULL, TRUE, FALSE, EVENT_CONSOLE);
 	if (user.hEventConsole == NULL) {
 		std::_tcout << TAG_ERROR << TEXT("Erro ao criar o evento para a consola") << std::endl;
 		exit(-1);
@@ -44,7 +44,7 @@ int _tmain(int argc, std::TSTRING argv[]) {
 
 	configServer(currentUser);	
 
-	std::_tcout << TAG_NORMAL << TEXT("Executa o comando \'") << CMD_LOGIN << _T("\' para puder ligar ao servidor") << std::endl;
+	std::_tcout << TAG_NORMAL << TEXT("Executa o comando '") << CMD_LOGIN << _T("' para puder ligar ao servidor") << std::endl;
 
 	cmd::consoleRoutine(currentUser);
 
