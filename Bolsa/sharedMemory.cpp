@@ -11,20 +11,20 @@ void SharedMemory::config(BOLSA& servidor) {
 
 	servidor.hSharedMemory = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(SHARED_MEMORY), SHARED_MEMORY_NAME);
 	if (servidor.hSharedMemory == NULL) {
-		std::_tcout << _T("[ERRO] Falha na criação da memória partilhada dos dados") << GetLastError() << std::endl;
+		std::_tcout << _T("[ERRO] Falha na criação da memória partilhada dos dados: ") << GetLastError() << std::endl;
 		return;
 	}
 
 	servidor.sharedMemory = reinterpret_cast<SHARED_MEMORY*>(MapViewOfFile(servidor.hSharedMemory, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(SHARED_MEMORY)));
 	if (servidor.sharedMemory == NULL) {
-		std::_tcout << _T("[ERRO] Falha na associação da memória partilhada dos dados") << GetLastError() << std::endl;
+		std::_tcout << _T("[ERRO] Falha na associação da memória partilhada dos dados: ") << GetLastError() << std::endl;
 		close(servidor);
 		return;
 	}
 
 	servidor.hEvent = CreateEvent(NULL, TRUE, FALSE, EVENT_NAME);
 	if (servidor.hEvent == NULL) {
-		std::_tcout << _T("[ERRO] Falha na criação do evento") << GetLastError() << std::endl;
+		std::_tcout << _T("[ERRO] Falha na criação do evento: ") << GetLastError() << std::endl;
 		close(servidor);
 		return;
 	}

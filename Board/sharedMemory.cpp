@@ -3,18 +3,23 @@
 void SharedMemory::connect(BOARD& board) {
     board.hSharedMemory = OpenFileMapping(FILE_MAP_ALL_ACCESS, TRUE, SHARED_MEMORY_NAME);
     if (board.hSharedMemory == NULL) {
-        std::_tcout << _T("[ERRO] Falha ao abrir a memória partilhada dos dados") << GetLastError() << std::endl;
+        std::_tcout << _T("[ERRO] Falha ao abrir a memória partilhada dos dados: ") << GetLastError() << std::endl;
         return;
     }
 
     board.sharedMemory = reinterpret_cast<SHARED_MEMORY*>(MapViewOfFile(board.hSharedMemory, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(SHARED_MEMORY)));
     if (board.sharedMemory == NULL) {
-        std::_tcout << _T("[ERRO] Falha na associação da memória partilhada dos dados") << GetLastError() << std::endl;
+        std::_tcout << _T("[ERRO] Falha na associação da memória partilhada dos dados: ") << GetLastError() << std::endl;
         close(board);
         return;
     }
 
-    // TODO Associar evento: board.hEvent = OpenEvent(...);
+    board.hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, EVENT_NAME);
+    if (board.hEvent == NULL) {
+        std::_tcout << _T("[ERRO] Falha na abertura do evento para acesso à memória partilhada: ") << GetLastError() << std::endl;
+        close(board);
+        return;
+    }
     std::_tcout << _T("Configuração da memória partillhada concluída") << std::endl << std::endl;
 }
 
