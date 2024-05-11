@@ -9,6 +9,19 @@ void SharedMemory::config(BOLSA& servidor) {
 	  - set up event
 	*/
 
+	servidor.hSharedMemory = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(SHARED_MEMORY), SHARED_MEMORY_NAME);
+	if (servidor.hSharedMemory == NULL) {
+		std::_tcout << _T("[ERRO] Falha na criação da memória partilhada do tabuleiro do jogo") << GetLastError() << std::endl;
+		return;
+	}
+
+	servidor.data = reinterpret_cast<SHARED_MEMORY*>(MapViewOfFile(servidor.hSharedMemory, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(SHARED_MEMORY)));
+	if (servidor.data == NULL) {
+		std::_tcout << _T("[ERRO] Falha na associação da memória partilhada do tabuleiro do jogo") << GetLastError() << std::endl;
+		close(servidor);
+		return;
+	}
+
 	std::_tcout << TAG_NORMAL << _T("Configuração da memória partillhada conculida, disponível para os programas board(GUI)s conectarem-se") << std::endl << std::endl;
 }
 
