@@ -74,7 +74,7 @@ typedef struct {
 	/* SHARED MEMORY */
 	HANDLE hSharedMemory; // Handle shared memory
 	HANDLE hEvent; // Event to triggerto update the shared memory
-	SHARED_MEMORY* data;
+	SHARED_MEMORY* sharedMemory;
 
 	/*---SHARED MEMORY---*/
 	HANDLE hSharedMemory;			// Handle shared memory
