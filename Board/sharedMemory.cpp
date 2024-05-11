@@ -25,7 +25,7 @@ void SharedMemory::connect(BOARD& board) {
 
 void SharedMemory::read(BOARD& board) {
     WaitForSingleObject(board.hEvent, INFINITE);
-    board.data = *(board.sharedMemory);
+	CopyMemory(&board.data, board.sharedMemory, sizeof(SHARED_MEMORY));
 }
 
 void SharedMemory::close(BOARD& board) {

@@ -9,9 +9,9 @@ void printCompany(COMPANY c) {
 }
 
 void printBoard(BOARD board) {
-	std::_tcout << "Name\nNumber of Free Stocks\nPrice Per Stock" << std::endl;
-	for (DWORD i = 0; i < board.data.numCompanies; i++) {
-		printCompany(board.data.companies[i]);
+	std::_tcout << _T("Name\nNumber of Free Stocks\nPrice Per Stock") << std::endl;
+	for (auto company : board.data.companies) {
+		printCompany(company);
 	}
 }
 
