@@ -51,7 +51,7 @@ typedef struct {
 	DWORD maxUsers;
 
 	/* COMPANY MANAGER */
-	std::vector<COMPANY> companyList; // List of companies
+	COMPANY_LIST companyList; // List of companies
 	HANDLE hTimerThread; // Timer thread
 	TIMER_DATA timerData; // Data for the timer
 
