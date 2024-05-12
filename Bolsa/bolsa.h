@@ -46,9 +46,6 @@ typedef struct {
 	bool isRunning;
 	bool isPaused;
 
-	/* REGISTRY */
-	HKEY hKey; //TODO: we need this?
-
 	/* USER MANAGER */
 	USER_LIST userList;
 	DWORD maxUsers;
