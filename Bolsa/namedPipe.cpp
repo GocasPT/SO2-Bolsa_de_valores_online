@@ -12,13 +12,6 @@ HANDLE NamedPipe::newNamedPipe() {
 void NamedPipe::config(BOLSA& servidor) {
 	std::_tcout << _T("A configurar o named pipe para receber os clientes...") << std::endl;
 
-	servidor.hUserEvent = CreateEvent(NULL, TRUE, FALSE, EVENT_USER_THREAD);
-	if (servidor.hUserEvent == NULL) {
-		std::stringstream ss;
-		ss << "Erro ao criar o event para limprar os handles das thread de comunicações encerradas (" << GetLastError() << ")";
-		throw std::runtime_error(ss.str());
-	}
-
 	servidor.hPipeInst = newNamedPipe();
 	if (servidor.hPipeInst == INVALID_HANDLE_VALUE) {
 		std::stringstream ss;
