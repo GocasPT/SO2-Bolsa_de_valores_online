@@ -286,13 +286,12 @@ void NamedPipe::responseBuy(TDATA& data, std::TSTRING companyName, DWORD amount)
 	else {
 		if (SWManager::addStock(*data.myUser, *company, amount)) {
 			_tcscpy_s(msg.data, _T("Compra efetuada com sucesso"));
-			//TODO: trigger event to update shared memory
+			//TODO: update late user op + trigger event to update shared memory
 		} else
 			_tcscpy_s(msg.data, _T("Chegates ao limites de stocks que podes ter"));
 	}
 
 	msg.code = CODE_GENERIC_FEEDBACK;
-
 	send(data.myUser->hPipeInst, msg);
 }
 
@@ -309,12 +308,16 @@ void NamedPipe::responseSell(TDATA& data, std::TSTRING companyName, DWORD amount
 	if (company == nullptr)
 		_tcscpy_s(msg.data, _T("Empresa não encontrada"));
 
-	if (SWManager::removeStock(*data.myUser, *company, amount)) {
-		_tcscpy_s(msg.data, _T("Venda efetuada com sucesso"));
-		//TODO: trigger event to update shared memory
-	} else
-		_tcscpy_s(msg.data, _T("Não tens ações suficientes para vender"));
+	if (!SWManager::userHaveStock(*data.myUser, *company))
+		_tcscpy_s(msg.data, _T("Não tens ações desta empresa"));
 
+	else if (SWManager::removeStock(*data.myUser, *company, amount)) {
+		_tcscpy_s(msg.data, _T("Venda efetuada com sucesso"));
+		//TODO: update late user op + trigger event to update shared memory
+	} else
+		_tcscpy_s(msg.data, _T("Não tens esse número de ações para vender"));
+
+	msg.code = CODE_GENERIC_FEEDBACK;
 	send(data.myUser->hPipeInst, msg);
 }
 

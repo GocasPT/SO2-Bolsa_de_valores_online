@@ -1,5 +1,12 @@
 #include "stockWalletManager.h"
 
+bool SWManager::userHaveStock(USER_DATA& user, COMPANY& company) {
+	for (DWORD i = 0; i < user.walletSize; i++)
+		if (!_tcscmp(user.wallet[i].companyName, company.name))
+			return true;
+	return false;
+}
+
 bool SWManager::addStock(USER_DATA& user, COMPANY& company, DWORD numOfStocks) {
 	for (DWORD i = 0; i < user.walletSize; i++)
 		if (!_tcscmp(user.wallet[i].companyName, company.name)) {
