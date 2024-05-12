@@ -1,4 +1,5 @@
 #include "stockWalletManager.h"
+#include "companyManager.h"
 
 bool SWManager::userHaveStock(USER_DATA& user, COMPANY& company) {
 	for (DWORD i = 0; i < user.walletSize; i++)
@@ -8,24 +9,33 @@ bool SWManager::userHaveStock(USER_DATA& user, COMPANY& company) {
 }
 
 bool SWManager::addStock(USER_DATA& user, COMPANY& company, DWORD numOfStocks) {
+	if (numOfStocks * company.pricePerStock > user.balance) {
+		return false;
+	}
+
+	bool updatedStock = false;
 	for (DWORD i = 0; i < user.walletSize; i++)
 		if (!_tcscmp(user.wallet[i].companyName, company.name)) {
 			user.wallet[i].numStocks += numOfStocks;
-			company.numFreeStocks -= numOfStocks;
-			user.balance -= numOfStocks * company.pricePerStock;
-			return true;
+			updatedStock = true;
+			break;
 		}
 
-	if (user.walletSize == MAX_STOCKS) return false;
+	if (!updatedStock) {
+		if (user.walletSize == MAX_STOCKS) return false;
 
-	STOCK_ITEM stock;
-	_tcscpy_s(stock.companyName, company.name);
-	stock.numStocks = numOfStocks;
-	stock.pricePerStock = company.pricePerStock;
-
-	user.wallet[user.walletSize++] = stock;
+		STOCK_ITEM stock;
+		_tcscpy_s(stock.companyName, company.name);
+		stock.numStocks = numOfStocks;
+		stock.pricePerStock = company.pricePerStock;
+		user.wallet[user.walletSize++] = stock;
+	}
+	
 	company.numFreeStocks -= numOfStocks;
 	user.balance -= numOfStocks * company.pricePerStock;
+
+	CompanyManager::updateStock(company, CompanyManager::BUY);
+
 	return true;
 }
 
@@ -34,7 +44,7 @@ bool SWManager::removeStock(USER_DATA& user, COMPANY& company, DWORD numOfStocks
 		if (!_tcscmp(user.wallet[i].companyName, company.name)) {
 			if (user.wallet[i].numStocks >= numOfStocks) {
 				if (user.wallet[i].numStocks < numOfStocks)
-					return false; //TODO: check this return
+					return false;
 
 				user.wallet[i].numStocks -= numOfStocks;
 				company.numFreeStocks += numOfStocks;
