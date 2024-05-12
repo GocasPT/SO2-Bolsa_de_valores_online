@@ -12,6 +12,13 @@ HANDLE NamedPipe::newNamedPipe() {
 void NamedPipe::config(BOLSA& servidor) {
 	std::_tcout << _T("A configurar o named pipe para receber os clientes...") << std::endl;
 
+	servidor.hUserEvent = CreateEvent(NULL, TRUE, FALSE, EVENT_USER_THREAD);
+	if (servidor.hUserEvent == NULL) {
+		std::stringstream ss;
+		ss << "Erro ao criar o event para limprar os handles das thread de comunicações encerradas (" << GetLastError() << ")";
+		throw std::runtime_error(ss.str());
+	}
+
 	servidor.hPipeInst = newNamedPipe();
 	if (servidor.hPipeInst == INVALID_HANDLE_VALUE) {
 		std::stringstream ss;
@@ -150,6 +157,7 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 			// send(data->myUser->hPipeInst, { CODE_FULL, _T('\0') });
 
 			while (data->isRunning) {
+				//TODO: add overlapped IO
 				ret = ReadFile(data->myUser->hPipeInst, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
 				if (!ret || !nBytes) {
 					DWORD error = GetLastError();
@@ -238,6 +246,10 @@ void NamedPipe::send(HANDLE hPipeInst, MESSAGE msg) {
 	}
 }
 
+void NamedPipe::sendAll(BOLSA& servidor, MESSAGE msg) {
+	//TODO: send message to all users (connected + queue)
+}
+
 void NamedPipe::responseList(TDATA& data) {
 	MESSAGE msg;
 	std::_tstringstream ss;
@@ -286,7 +298,7 @@ void NamedPipe::responseBuy(TDATA& data, std::TSTRING companyName, DWORD amount)
 	else {
 		if (SWManager::addStock(*data.myUser, *company, amount)) {
 			_tcscpy_s(msg.data, _T("Compra efetuada com sucesso"));
-			//TODO: update late user op + trigger event to update shared memory
+			CompanyManager::updateStock(*company, CompanyManager::BUY);
 		} else
 			_tcscpy_s(msg.data, _T("Chegates ao limites de stocks que podes ter"));
 	}
@@ -313,7 +325,7 @@ void NamedPipe::responseSell(TDATA& data, std::TSTRING companyName, DWORD amount
 
 	else if (SWManager::removeStock(*data.myUser, *company, amount)) {
 		_tcscpy_s(msg.data, _T("Venda efetuada com sucesso"));
-		//TODO: update late user op + trigger event to update shared memory
+		CompanyManager::updateStock(*company, CompanyManager::SELL);
 	} else
 		_tcscpy_s(msg.data, _T("Não tens esse número de ações para vender"));
 
@@ -358,5 +370,5 @@ void NamedPipe::close(BOLSA& servidor) {
 
 	DeleteCriticalSection(&servidor.cs);
 
-	std::_tcout << TAG_NORMAL << _T("Named pipe fechado com sucesso") << std::endl << std::endl;
+	std::_tcout << _T("Named pipe fechado com sucesso") << std::endl << std::endl;
 }
