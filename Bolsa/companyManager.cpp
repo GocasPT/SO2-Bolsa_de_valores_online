@@ -64,16 +64,22 @@ COMPANY* CompanyManager::getCompany(COMPANY_LIST& companyList, std::TSTRING name
 	return &(*it);
 }
 
-void CompanyManager::updateStock(BOLSA& servidor, std::TSTRING name, DWORD pricePerStock) {
-	COMPANY* company = getCompany(servidor.companyList, name);
-	if (company == nullptr) {
-		std::_tcout << TAG_WARNING << _T("Empresa não encontrada") << std::endl;
-		return;
+void CompanyManager::updateStock(COMPANY& company, CompanyManager::OPERATION opType) {
+	float variation = (rand() % 100) / 100.0f;
+
+	switch (opType) {
+		case CompanyManager::BUY:
+			company.pricePerStock += variation;
+			break;
+
+		case CompanyManager::SELL:
+			company.pricePerStock -= variation;
+			break;
 	}
 
-	company->pricePerStock = pricePerStock;
+	std::_tcout << TAG_NORMAL << _T("Preço das ações atualizado com sucesso") << std::endl << _T("Nome: ") << company.name << _T(" | Preço por Ação: ") << company.pricePerStock << std::endl << std::endl;
 
-	std::_tcout << TAG_NORMAL << _T("Preço das ações atualizado com sucesso") << std::endl << _T("Nome: ") << name << _T(" | Preço por Ação: ") << company->pricePerStock << std::endl << std::endl;
+	//TODO: notify users (set event to send message)
 }
 
 void CompanyManager::pauseCompaniesOps(BOLSA& servidor, int time) {
