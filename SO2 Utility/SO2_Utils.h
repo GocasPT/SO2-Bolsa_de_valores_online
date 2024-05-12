@@ -7,7 +7,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <vector>
+#include <array>
 
 #ifdef UNICODE
 	#define TSTRING wstring
@@ -23,27 +23,27 @@
 	#define _tifstream std::ifstream
 #endif
 
-#define MAX 256
-
-#define MUTEX_BOLSA_NAME _T("BOLSA_MUTEX")
+#define MAX_TCHAR 256
+#define MAX_STOCKS 10
 
 typedef struct {
-	//TODO: list of the stocks owned
-	int PLACE_HOLDER;
-} STOCK_WALLET;
+	TCHAR companyName[MAX_TCHAR];
+	DWORD numStocks;
+	float pricePerStock;
+} STOCK_ITEM;
 
-//TODO: change some fields
 typedef struct {
-	TCHAR name[MAX];
-	TCHAR password[MAX];
+	TCHAR name[MAX_TCHAR];
+	TCHAR password[MAX_TCHAR];
 	float balance;
-	STOCK_WALLET wallet; //TODO: check this
+	STOCK_ITEM wallet[MAX_STOCKS];
+	DWORD walletSize;
 	bool connected;
 	bool inQueue;
 } USER_DATA;
 
 typedef struct {
-	TCHAR name[MAX];
+	TCHAR name[MAX_TCHAR];
 	DWORD numFreeStocks;
 	float pricePerStock;
 } COMPANY;

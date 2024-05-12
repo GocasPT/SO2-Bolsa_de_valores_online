@@ -19,7 +19,7 @@ typedef struct {
 typedef struct {
 	bool logged;
 	bool inQueue;
-	TCHAR name[MAX];
+	TCHAR name[MAX_TCHAR];
 	PIPE_INST hPipeInst;
 	DWORD pipeMode;
 	HANDLE hThread;

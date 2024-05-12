@@ -1,6 +1,7 @@
 ﻿#include "namedPipe.h"
 #include "userManager.h"
 #include "companyManager.h"
+#include "stockWalletManager.h"
 #include <sstream>
 
 HANDLE NamedPipe::newNamedPipe() {
@@ -219,6 +220,7 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 	}
 
 	//TODO: delete this tData from list
+	//TODO: thread/resource manager (thread exit, remove from list)
 	std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Não existe nenhum cliente para atener. A sair...") << std::endl;
 
 	return 0;
@@ -228,9 +230,6 @@ void NamedPipe::send(HANDLE hPipeInst, MESSAGE msg) {
 	BOOL ret;
 	DWORD nBytes;
 
-	//TODO: PLACEHOLDER
-	std::_tcout << _T("A enviar a mensagem: ") << msg.data << _T(" (") << _tcslen(msg.data) << _T(") [CODE: ") << msg.code << _T("]") << std::endl;
-
 	ret = WriteFile(hPipeInst, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
 	if (!ret || !nBytes) {
 		std::stringstream ss;
@@ -239,7 +238,6 @@ void NamedPipe::send(HANDLE hPipeInst, MESSAGE msg) {
 	}
 }
 
-//TODO: move to this
 void NamedPipe::responseList(TDATA& data) {
 	MESSAGE msg;
 	std::_tstringstream ss;
@@ -265,22 +263,13 @@ void NamedPipe::responseList(TDATA& data) {
 	send(data.myUser->hPipeInst, { CODE_LISTC_ITEM, _T('\0') });
 }
 
-//TODO: move to this
 void NamedPipe::responseBuy(TDATA& data, std::TSTRING companyName, DWORD amount) {
-	/*TODO
-	  x check if buy/sell is open
-	  x check user balance, company, amount, etc
-	  - update user stock wallet, balance and data
-	  x send feedback to user
-	*/
-
 	if (data.isPaused) {
 		send(data.myUser->hPipeInst, { CODE_GENERIC_FEEDBACK, _T("Compra/Venda de ações suspensa") });
 		return;
 	}
 
 	MESSAGE msg;
-	// std::_tstringstream ss;
 
 	float balance = data.myUser->balance;
 	COMPANY* company = CompanyManager::getCompany(data.companyList, companyName);
@@ -295,12 +284,11 @@ void NamedPipe::responseBuy(TDATA& data, std::TSTRING companyName, DWORD amount)
 		_tcscpy_s(msg.data, _T("Ações insuficientes"));
 
 	else {
-		//TODO: update data
-		data.myUser->balance -= company->pricePerStock * amount;
-		company->numFreeStocks -= amount;
-		//TODO: create "stockWallterManager" model
-		//TODO: data->myUser->stockWallet.push_back({ companyName, amount });
-		_tcscpy_s(msg.data, _T("Compra efetuada com sucesso"));
+		if (SWManager::addStock(*data.myUser, *company, amount)) {
+			_tcscpy_s(msg.data, _T("Compra efetuada com sucesso"));
+			//TODO: trigger event to update shared memory
+		} else
+			_tcscpy_s(msg.data, _T("Chegates ao limites de stocks que podes ter"));
 	}
 
 	msg.code = CODE_GENERIC_FEEDBACK;
@@ -308,16 +296,7 @@ void NamedPipe::responseBuy(TDATA& data, std::TSTRING companyName, DWORD amount)
 	send(data.myUser->hPipeInst, msg);
 }
 
-//TODO: move to this
 void NamedPipe::responseSell(TDATA& data, std::TSTRING companyName, DWORD amount) {
-	/*TODO
-	  x check if buy/sell is open
-	  - check if user have this stock
-	  - check if user have this or more amount of stock
-	  - update data
-	  - send feedback to user
-	*/
-
 	if (data.isPaused) {
 		send(data.myUser->hPipeInst, { CODE_GENERIC_FEEDBACK, _T("Compra/Venda de ações suspensa") });
 		return;
@@ -330,12 +309,15 @@ void NamedPipe::responseSell(TDATA& data, std::TSTRING companyName, DWORD amount
 	if (company == nullptr)
 		_tcscpy_s(msg.data, _T("Empresa não encontrada"));
 
-	//TODO: create "stockWallterManager" model
+	if (SWManager::removeStock(*data.myUser, *company, amount)) {
+		_tcscpy_s(msg.data, _T("Venda efetuada com sucesso"));
+		//TODO: trigger event to update shared memory
+	} else
+		_tcscpy_s(msg.data, _T("Não tens ações suficientes para vender"));
 
 	send(data.myUser->hPipeInst, msg);
 }
 
-//TODO: move to this
 void NamedPipe::responseBalance(TDATA& data) {
 	MESSAGE msg;
 	std::_tstringstream ss;
@@ -364,7 +346,7 @@ void NamedPipe::close(BOLSA& servidor) {
 		std::_tcout << _T(" | Fechado") << std::endl;
 	}
 
-	WaitForMultipleObjects(servidor.hUsersThreadList.size(), servidor.hUsersThreadList.data(), TRUE, INFINITE);
+	WaitForMultipleObjects(static_cast<DWORD>(servidor.hUsersThreadList.size()), servidor.hUsersThreadList.data(), TRUE, INFINITE);
 
 	CloseHandle(servidor.hPipeInst);
 

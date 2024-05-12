@@ -20,6 +20,7 @@ void Files::read_files(BOLSA& servidor) {
 			user.connected = false;
 			user.inQueue = false;
 			user.hPipeInst = INVALID_HANDLE_VALUE;
+			user.walletSize = 0;
 
 			servidor.userList.push_back(user);
 			ss.clear();

@@ -21,7 +21,7 @@
 
 typedef struct {
 	DWORD code;
-	TCHAR data[MAX];
+	TCHAR data[MAX_TCHAR];
 } MESSAGE;
 
 #endif // !SO2_NAMED_PIPE_H

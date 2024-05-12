@@ -1,7 +1,6 @@
 #include "userManager.h"
 #include <algorithm>
 
-//TODO: check
 /**
  * \brief Validar as credênciais do utilizador.
  *
@@ -19,7 +18,6 @@ bool UserManager::validateUser(const USER_LIST& userList, USER user) {
 		return true;
 }
 
-//TODO: check
 /**
  * \brief Adiciona um utilizador ao servidor ou à fila de espera.
  *
@@ -40,7 +38,6 @@ bool UserManager::addUser(BOLSA& servidor, USER* user) {
 	}
 }
 
-//TODO: check
 /**
  * \brief Remove um utilizador do servidor.
  *
@@ -88,15 +85,15 @@ void UserManager::listUsers(const BOLSA& servidor) {
 	}
 
 	for (auto it = servidor.userList.begin(); it != servidor.userList.end(); it++)
-		std::_tcout << _T("Nome: ") << it->name <<
+		std::_tcout << _T("\tNome: ") << it->name <<
 			_T(" | Saldo: ") << it->balance <<
+			_T(" | Num de ações: ") << it->walletSize <<
 			_T(" [") << (it->connected ? _T("Online") : it->inQueue ? _T("Fila de espera") : _T("Offline")) << _T("]")
 			<< std::endl;
 
 	std::_tcout << std::endl;
 }
 
-//TODO: check
 /**
  * \brief Devolve a referência do utilizador com o nome especificado.
  *
@@ -115,26 +112,4 @@ USER& UserManager::getUser(USER_LIST& userList, std::TSTRING userName) {
 		throw std::runtime_error("User not found"); //TODO: improve exception
 	else
 		return *it;
-}
-
-//TODO: check
-//TODO: we need this?
-/**
- * \brief Liberta todos os utilizadores do servidor.
- *
- * Esta função deve ser chamada antes de terminar o servidor.
- *
- * \param servidor - Referencia do servidor.
- */
-void UserManager::releaseUsers(BOLSA& servidor) {
-	USER_LIST& userList = servidor.userList;
-	USER_QUEUE& hUsersQueue = servidor.hUsersQueue;
-
-	for (auto it = userList.begin(); it != userList.end(); it++)
-		//TODO: send message to user to disconnect
-		;
-
-	while (!hUsersQueue.empty()) {
-		//TODO: send message to user to disconnect
-	}
 }
