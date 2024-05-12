@@ -15,12 +15,14 @@
 	#define _tcin wcin
 	#define _tstringstream wstringstream
 	#define _tifstream wifstream
+	#define _tofstream wofstream
 #else
 	#define _tcout std::cout
 	#define _tcin std::cin
 	#define TSTRING std::string
 	#define _tstringstream std::stringstream
 	#define _tifstream std::ifstream
+	#define _tofstream std::ofstream
 #endif
 
 #define MAX_TCHAR 256

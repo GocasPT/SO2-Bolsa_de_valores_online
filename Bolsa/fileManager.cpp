@@ -26,10 +26,10 @@ void Files::read_files(BOLSA& servidor) {
 			ss.clear();
 		}
 		file.close();
-	}
-	else {
+
+	} else {
 		std::stringstream ss;
-		ss << "Erro ao abrir o ficeiro 'users.txt'"; //TODO: use FILE_USERS [UNICODE → ANSII]
+		ss << "Erro ao abrir o ficheiro '" << FILE_USERS << "'";
 		throw std::runtime_error(ss.str());
 	}
 	
@@ -54,17 +54,15 @@ void Files::read_files(BOLSA& servidor) {
 			ss.clear();
 		}
 		file.close();
-	}
-	else {
+
+	} else {
 		std::stringstream ss;
-		ss << "Erro ao abrir o ficeiro 'companies.txt'"; //TODO: use FILE_COMPANIES [UNICODE → ANSII]
+		ss << "Erro ao abrir o ficheiro '" << FILE_COMPANIES << "'";
 		throw std::runtime_error(ss.str());
 	}
 	std::_tcout << _T("Ficheiro '") << FILE_COMPANIES << _T("' lido com sucesso (2/") << TOTAL_FILES << _T(")") << std::endl;
 
-	//TODO: maybe add more files to read
-
-	std::_tcout << TAG_NORMAL << _T("Ficheiros lidos com sucesso") << std::endl << std::endl;
+	std::_tcout << _T("Ficheiros lidos com sucesso") << std::endl << std::endl;
 }
 
 void Files::write_files(BOLSA& servidor) {
@@ -75,5 +73,37 @@ void Files::write_files(BOLSA& servidor) {
 	  - maybe more files to write/save
 	*/
 
-	std::_tcout << TAG_NORMAL << _T("Dados salvos no ficheiroscom sucesso") << std::endl << std::endl;
+	std::_tofstream file;
+
+	file.open(FILE_USERS, std::ios::out | std::ios::trunc);
+	if (file.is_open()) {
+		for (USER user : servidor.userList)
+			file << user.name << _T(" ") << user.password << _T(" ") << user.balance << std::endl;
+		
+		file.close();
+
+	} else {
+		std::stringstream ss;
+		ss << "Erro ao abrir o ficheiro '" << FILE_USERS << "'";
+		throw std::runtime_error(ss.str());
+	}
+
+	std::_tcout << _T("Dados salvos no ficheiro '") << FILE_USERS << _T("' com sucesso (1/") << TOTAL_FILES - 1 << _T(")") << std::endl;
+
+	file.open(FILE_COMPANIES, std::ios::out | std::ios::trunc);
+	if (file.is_open()) {
+		for (COMPANY company : servidor.companyList)
+			file << company.name << _T(" ") << company.numFreeStocks << _T(" ") << company.pricePerStock << std::endl;
+		
+		file.close();
+
+	} else {
+		std::stringstream ss;
+		ss << "Erro ao abrir o ficheiro '" << FILE_COMPANIES << "'";
+		throw std::runtime_error(ss.str());
+	}
+
+	std::_tcout << _T("Dados salvos no ficheiro '") << FILE_COMPANIES << _T("' com sucesso (2/") << TOTAL_FILES - 1 << _T(")") << std::endl;
+
+	std::_tcout << _T("Dados salvos no ficheiroscom sucesso") << std::endl << std::endl;
 }
