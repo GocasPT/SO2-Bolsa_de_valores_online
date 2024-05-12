@@ -1,4 +1,5 @@
 ﻿#include "companyManager.h"
+#include "namedPipe.h"
 #include <sstream>
 
 void CompanyManager::config(BOLSA& servidor) {
@@ -62,6 +63,20 @@ COMPANY* CompanyManager::getCompany(COMPANY_LIST& companyList, std::TSTRING name
 		return nullptr;
 
 	return &(*it);
+}
+
+void CompanyManager::updateStock(BOLSA& servidor, std::TSTRING name, DWORD pricePerStock) {
+	COMPANY* company = getCompany(servidor.companyList, name);
+	if (company == nullptr) {
+		std::_tcout << TAG_WARNING << _T("Empresa não encontrada") << std::endl;
+		return;
+	}
+
+	company->pricePerStock = pricePerStock;
+
+	std::_tcout << TAG_NORMAL << _T("Preço das ações atualizado com sucesso") << std::endl << _T("Nome: ") << name << _T(" | Preço por Ação: ") << company->pricePerStock << std::endl << std::endl;
+
+	//TODO: notify users (set event to send message)
 }
 
 void CompanyManager::updateStock(COMPANY& company, CompanyManager::OPERATION opType) {
