@@ -3,12 +3,6 @@
 void SharedMemory::config(BOLSA& servidor) {
 	std::_tcout << _T("A configurar a memória partilhada para mandar aos board(GUI)s...") << std::endl;
 
-	/*TODO:
-	  - create shared memory
-	  - set up handler
-	  - set up event
-	*/
-
 	servidor.hSharedMemory = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(SHARED_MEMORY), SHARED_MEMORY_NAME);
 	if (servidor.hSharedMemory == NULL) {
 		std::_tcout << _T("[ERRO] Falha na criação da memória partilhada dos dados: ") << GetLastError() << std::endl;
@@ -27,7 +21,10 @@ void SharedMemory::config(BOLSA& servidor) {
 		std::_tcout << _T("[ERRO] Falha na criação do evento: ") << GetLastError() << std::endl;
 		close(servidor);
 		return;
-	}
+	} 
+
+	servidor.sharedMemory->numBoards = 0;
+	servidor.sharedMemory->boardsRead = 0;
 
 	std::_tcout << TAG_NORMAL << _T("Configuração da memória partillhada concluída, disponível para os programas board(GUI)s se conectarem") << std::endl << std::endl;
 }
@@ -35,17 +32,12 @@ void SharedMemory::config(BOLSA& servidor) {
 void SharedMemory::update(BOLSA &servidor) {
 	ResetEvent(servidor.hEvent);
 
-	ZeroMemory(servidor.sharedMemory->companies, sizeof(COMPANY) * N);
+	ZeroMemory(servidor.sharedMemory->companies, sizeof(COMPANY) * MAX_COMPANIES);
 	std::copy(servidor.companyList.begin(), servidor.companyList.end(), servidor.sharedMemory->companies);
 
+	servidor.sharedMemory->numCompanies = servidor.companyList.size();
+
 	// TODO acrescentar última transação: servidor.data->lastTransaction = servidor.lastTransaction;
-
-	/*TODO
-	  - format date to write
-	  - write data
-	  - trigger event
-	*/
-
 
 	SetEvent(servidor.hEvent);
 }

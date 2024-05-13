@@ -20,12 +20,23 @@ void SharedMemory::connect(BOARD& board) {
         close(board);
         return;
     }
+
+    board.sharedMemory->numBoards++;
+
     std::_tcout << _T("Configuração da memória partillhada concluída") << std::endl << std::endl;
 }
 
 void SharedMemory::read(BOARD& board) {
     WaitForSingleObject(board.hEvent, INFINITE);
 	CopyMemory(&board.data, board.sharedMemory, sizeof(SHARED_MEMORY));
+
+    std::_tcout << _T("Boards Connected: ") << board.sharedMemory->numBoards << std::endl;
+    std::_tcout << _T("Boards Read: ") << board.sharedMemory->boardsRead << std::endl;
+
+    board.sharedMemory->boardsRead++;
+    if (board.sharedMemory->boardsRead == board.sharedMemory->numBoards) {
+        ResetEvent(board.hEvent);
+    }
 }
 
 void SharedMemory::close(BOARD& board) {
