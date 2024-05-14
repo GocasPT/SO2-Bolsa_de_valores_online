@@ -58,7 +58,7 @@ USER* UserManager::removeUser(USER_LIST& userList, USER_QUEUE& userQueue, USER* 
 	}
 
 	it->connected = false;
-	CloseHandle(it->hPipeInst);
+	CloseHandle(it->hPipeInst.hPipe);
 
 	if (userQueue.empty())
 		return nullptr;

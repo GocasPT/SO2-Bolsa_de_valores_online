@@ -24,11 +24,6 @@ void closeServer(BOLSA& servidor) {
 
 	servidor.isRunning = false;
 
-	//TODO: PLACEHOLDER
-	//HANDLE hTemp = CreateFile(PIPE_BOLSA_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-	//CloseHandle(hTemp);
-	//TODO: PLACEHOLDER
-
 	CompanyManager::close(servidor);
 	SharedMemory::close(servidor);
 	NamedPipe::close(servidor);

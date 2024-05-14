@@ -6,12 +6,12 @@
 #include "SO2_NamedPipe.h"
 
 namespace NamedPipe {
-	HANDLE newNamedPipe();
+	PIPE_INST newNamedPipe();
 	void config(BOLSA& servidor);
 	bool auth(BOLSA& servidor, USER &loginUser);
 	DWORD WINAPI reciverRoutine(LPVOID lpParam);
 	DWORD WINAPI userRoutine(LPVOID lpParam);
-	void send(HANDLE hPipeInst, MESSAGE msg);
+	void send(PIPE_INST hPipeInst, MESSAGE msg);
 	void sendAll(BOLSA& servidor, MESSAGE msg);
 	void responseList(TDATA& data);
 	void responseBuy(TDATA& data, std::TSTRING company, DWORD numOfStocks);

@@ -19,7 +19,7 @@ void Files::read_files(BOLSA& servidor) {
 			ss >> user.name >> user.password >> user.balance;
 			user.connected = false;
 			user.inQueue = false;
-			user.hPipeInst = INVALID_HANDLE_VALUE;
+			user.hPipeInst.hPipe = INVALID_HANDLE_VALUE;
 			user.walletSize = 0;
 
 			servidor.userList.push_back(user);

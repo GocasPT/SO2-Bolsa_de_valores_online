@@ -10,9 +10,9 @@
 #include <array>
 
 #ifdef UNICODE
-	#define TSTRING wstring
 	#define _tcout wcout
 	#define _tcin wcin
+	#define TSTRING wstring
 	#define _tstringstream wstringstream
 	#define _tifstream wifstream
 	#define _tofstream wofstream
@@ -27,6 +27,9 @@
 
 #define MAX_TCHAR 256
 #define MAX_STOCKS 10
+
+#define TAG_ERROR _T("[ERRO] ")
+#define TAG_WARNING _T("[WARNING] ")
 
 typedef struct {
 	TCHAR companyName[MAX_TCHAR];

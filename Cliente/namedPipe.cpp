@@ -263,19 +263,14 @@ void NamedPipe::requestBalance(CLIENTE& user) {
  * \param user - Estrutura com os dados do utilizador
  */
 void NamedPipe::close(CLIENTE& user) {
+	send(user, { CODE_EXIT, _T('\0') });
+
 	CancelIo(user.hPipeInst.hPipe);
 	SetEvent(user.hPipeInst.hEvent);
 
 	WaitForSingleObject(user.hThread, INFINITE);
 
 	CloseHandle(user.hThread);
-
-	if (!DisconnectNamedPipe(user.hPipeInst.hPipe)) {
-		/*std::stringstream ss;
-		ss << "Erro ao desconectar o named pipe (" << GetLastError() << ")";
-		throw std::runtime_error(ss.str());*/
-		std::_tcout << TAG_ERROR << TEXT("Erro ao desconectar o named pipe") << std::endl;
-	}
 
 	CloseHandle(user.hPipeInst.hPipe);
 	CloseHandle(user.hPipeInst.hEvent);
