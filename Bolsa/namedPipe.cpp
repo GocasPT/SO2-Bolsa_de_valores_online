@@ -35,6 +35,22 @@ void NamedPipe::config(BOLSA& servidor) {
 	/*---CRITICAL SECTION---*/
 	InitializeCriticalSection(&servidor.cs);
 
+	/*---THREAD PARA GERIR LISTAS---*/
+	servidor.hDataThread = CreateThread(NULL, 0, dataRoutine, &servidor, 0, NULL);
+	if (servidor.hDataThread == NULL) {
+		std::stringstream ss;
+		ss << "Erro ao criar a thread para gerir as listas (" << GetLastError() << ")";
+		throw std::runtime_error(ss.str());
+	}
+
+	/*---THREAD PARA MANDAR NOTIFICAÇÕES---*/
+	servidor.hNotifyThread = CreateThread(NULL, 0, notifyRoutine, &servidor, 0, NULL);
+	if (servidor.hNotifyThread == NULL) {
+		std::stringstream ss;
+		ss << "Erro ao criar a thread para mandar notificações (" << GetLastError() << ")";
+		throw std::runtime_error(ss.str());
+	}
+
 	/*---THREAD PARA RECEBER CLIENTES---*/
 	servidor.hReciverThread = CreateThread(NULL, 0, reciverRoutine, &servidor, 0, NULL);
 	if (servidor.hReciverThread == NULL) {
@@ -44,6 +60,59 @@ void NamedPipe::config(BOLSA& servidor) {
 	}
 
 	std::_tcout << TAG_NORMAL << _T("Configuração do named piep concluida, já está à esperade um cliente para connectar") << std::endl << std::endl;
+}
+
+bool NamedPipe::auth(BOLSA& servidor, USER& loginUser) {
+	BOOL ret;
+	DWORD nBytes;
+	MESSAGE msg;
+
+	// Lê a mensagem de login do cliente
+	ret = ReadFile(servidor.hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &servidor.hPipeInst.oOverlap);
+	if (!ret || !nBytes) {
+		switch (GetLastError()) {
+		case ERROR_IO_PENDING:
+			WaitForSingleObject(servidor.hPipeInst.hEvent, INFINITE);
+			break;
+
+		case ERROR_BROKEN_PIPE:
+			return false;
+
+		default:
+			std::stringstream ss;
+			ss << "Erro ao ler a mensagem do cliente (" << GetLastError() << ")";
+			throw std::runtime_error(ss.str());
+		}
+	}
+
+	// Extrai os dados da mensagem
+	std::_tstringstream ss;
+	ss << msg.data;
+	ss >> loginUser.name >> loginUser.password;
+	DWORD code;
+
+	if (UserManager::validateUser(servidor.userList, loginUser))
+		code = CODE_LOGIN; // Login válido
+	else
+		code = CODE_DENID; // Login inválido
+
+	send(servidor.hPipeInst, { code, _T('\0') }); // Manda mensagem de login
+
+	return code == CODE_LOGIN; // Retorna se o login foi válido
+}
+
+DWORD WINAPI NamedPipe::dataRoutine(LPVOID lpParam) {
+	BOLSA* data = (BOLSA*)lpParam;
+
+	//TODO: data manager logic (basiclly remove close handles)
+	/*TODO
+	  - wait event
+	  - enter CS
+	  - re-organize data
+	  - leave CS
+	*/
+
+	return 0;
 }
 
 DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
@@ -131,43 +200,16 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 	return 0;
 }
 
-bool NamedPipe::auth(BOLSA& servidor, USER& loginUser) {
-	BOOL ret;
-	DWORD nBytes;
-	MESSAGE msg;
+DWORD WINAPI NamedPipe::notifyRoutine(LPVOID lpParam) {
+	BOLSA* data = (BOLSA*)lpParam;
 
-	// Lê a mensagem de login do cliente
-	ret = ReadFile(servidor.hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &servidor.hPipeInst.oOverlap);
-	if (!ret || !nBytes) {
-		switch (GetLastError()) {
-			case ERROR_IO_PENDING:
-				WaitForSingleObject(servidor.hPipeInst.hEvent, INFINITE);
-				break;
+	//TODO: notify system
+	/*TODO
+	  - wait for event
+	  - send all users the message
+	*/
 
-			case ERROR_BROKEN_PIPE:
-				return false;
-
-			default:
-				std::stringstream ss;
-				ss << "Erro ao ler a mensagem do cliente (" << GetLastError() << ")";
-				throw std::runtime_error(ss.str());
-		}
-	}
-
-	// Extrai os dados da mensagem
-	std::_tstringstream ss;
-	ss << msg.data;
-	ss >> loginUser.name >> loginUser.password;
-	DWORD code;
-
-	if (UserManager::validateUser(servidor.userList, loginUser))
-		code = CODE_LOGIN; // Login válido
-	else
-		code = CODE_DENID; // Login inválido
-
-	send(servidor.hPipeInst, { code, _T('\0') }); // Manda mensagem de login
-
-	return code == CODE_LOGIN; // Retorna se o login foi válido
+	return 0;
 }
 
 DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
@@ -426,6 +468,12 @@ void NamedPipe::close(BOLSA& servidor) {
 
 	WaitForSingleObject(servidor.hReciverThread, INFINITE);
 	CloseHandle(servidor.hReciverThread);
+
+	WaitForSingleObject(servidor.hNotifyThread, INFINITE);
+	CloseHandle(servidor.hNotifyThread);
+
+	WaitForSingleObject(servidor.hDataThread, INFINITE);
+	CloseHandle(servidor.hDataThread);
 
 	DeleteCriticalSection(&servidor.cs);
 

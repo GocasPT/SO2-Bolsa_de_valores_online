@@ -63,9 +63,13 @@ typedef struct {
 	HANDLE hSharedMemory;			// Handle shared memory
 	HANDLE hEvent;					// Event to triggerto update the shared memory
 
+	/*---GESTOR DE DADOS*/
+	HANDLE hDataThread;				// Data thread
+
 	/*---NAMED PIPE---*/
 	PIPE_INST hPipeInst;			// Current reciver pipe
 	HANDLE hReciverThread;			// Reciver thread
+	HANDLE hNotifyThread;			// Notify thread
 	HANDLE_LIST hUsersThreadList;	// Threads for comunication with clients
 	PIPE_INST_LIST hUsersList;		// List of clients connected
 	USER_QUEUE hUsersQueue;			// Queue of clients waiting to connect

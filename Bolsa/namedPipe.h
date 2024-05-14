@@ -9,7 +9,9 @@ namespace NamedPipe {
 	PIPE_INST newNamedPipe();
 	void config(BOLSA& servidor);
 	bool auth(BOLSA& servidor, USER &loginUser);
+	DWORD WINAPI dataRoutine(LPVOID lpParam);
 	DWORD WINAPI reciverRoutine(LPVOID lpParam);
+	DWORD WINAPI notifyRoutine(LPVOID lpParam);
 	DWORD WINAPI userRoutine(LPVOID lpParam);
 	void send(PIPE_INST hPipeInst, MESSAGE msg);
 	void sendAll(BOLSA& servidor, MESSAGE msg);
