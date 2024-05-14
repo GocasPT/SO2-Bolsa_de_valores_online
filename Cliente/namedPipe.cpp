@@ -20,8 +20,8 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 		throw std::runtime_error(ss.str());
 	}
 
-	ZeroMemory(&user.hPipeInst.overlap, sizeof(OVERLAPPED));
-	user.hPipeInst.overlap.hEvent = user.hPipeInst.hEvent;
+	ZeroMemory(&user.hPipeInst.oOverlap, sizeof(OVERLAPPED));
+	user.hPipeInst.oOverlap.hEvent = user.hPipeInst.hEvent;
 	std::_tcout << _T("Overlap I/O preparado") << std::endl;
 
 	std::_tcout << _T("A conectar ao servidor...");
@@ -68,7 +68,7 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 
 	//TODO: exit doesnt work 100%
 	while (user->runnig) {
-		ret = ReadFile(user->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user->hPipeInst.overlap);
+		ret = ReadFile(user->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user->hPipeInst.oOverlap);
 		if (!ret || !nBytes) {
 			DWORD error = GetLastError();
 			if (error == ERROR_BROKEN_PIPE || error == ERROR_PIPE_NOT_CONNECTED) {
@@ -129,12 +129,16 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 				break;
 
 			case CODE_GENERIC_FEEDBACK:
-				std::_tcout << TAG_NORMAL << msg.data << std::endl; //TODO: change tag (server tag or feedback tag)
+				std::_tcout << TAG_NORMAL << msg.data << std::endl;
+				break;
+
+			case CODE_NOTIFY:
+				std::_tcout << std::endl << msg.data << std::endl << _T(">> ");
 				break;
 		}
 
 		//TODO: check if is in this position
-		SetEvent(user->hEventConsole); //TODO: throw in erro [?]
+		SetEvent(user->hEventConsole);
 	}
 
 	return 0;

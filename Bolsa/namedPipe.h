@@ -5,6 +5,8 @@
 #include "bolsa.h"
 #include "SO2_NamedPipe.h"
 
+#define EVENT_NOTIFY _T("NotifyEvent")
+
 namespace NamedPipe {
 	PIPE_INST newNamedPipe();
 	void config(BOLSA& servidor);
@@ -14,7 +16,7 @@ namespace NamedPipe {
 	DWORD WINAPI notifyRoutine(LPVOID lpParam);
 	DWORD WINAPI userRoutine(LPVOID lpParam);
 	void send(PIPE_INST hPipeInst, MESSAGE msg);
-	void sendAll(BOLSA& servidor, MESSAGE msg);
+	void sendAll(USER_LIST userList, MESSAGE msg);
 	void responseList(TDATA& data);
 	void responseBuy(TDATA& data, std::TSTRING company, DWORD numOfStocks);
 	void responseSell(TDATA& data, std::TSTRING company, DWORD numOfStocks);

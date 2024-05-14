@@ -14,6 +14,7 @@ PIPE_INST NamedPipe::newNamedPipe() {
 		throw std::runtime_error(ss.str());
 	}
 
+	ZeroMemory(&newPipeInst.oOverlap, sizeof(OVERLAPPED));
 	newPipeInst.oOverlap.hEvent = newPipeInst.hEvent;
 
 	newPipeInst.hPipe = CreateNamedPipe(PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, sizeof(MESSAGE), sizeof(MESSAGE), PIPE_TIMEOUT, NULL);
@@ -36,6 +37,13 @@ void NamedPipe::config(BOLSA& servidor) {
 	InitializeCriticalSection(&servidor.cs);
 
 	/*---THREAD PARA GERIR LISTAS---*/
+	servidor.hDataEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	if (servidor.hDataEvent == NULL) {
+		std::stringstream ss;
+		ss << "Erro ao criar o evento para gerir as listas (" << GetLastError() << ")";
+		throw std::runtime_error(ss.str());
+	}
+
 	servidor.hDataThread = CreateThread(NULL, 0, dataRoutine, &servidor, 0, NULL);
 	if (servidor.hDataThread == NULL) {
 		std::stringstream ss;
@@ -44,6 +52,16 @@ void NamedPipe::config(BOLSA& servidor) {
 	}
 
 	/*---THREAD PARA MANDAR NOTIFICAÇÕES---*/
+	servidor.notifyData.company = nullptr;
+	servidor.notifyData.oldPrice = 0;
+
+	servidor.hNotifyEvent = CreateEvent(NULL, FALSE, FALSE, EVENT_NOTIFY);
+	if (servidor.hNotifyEvent == NULL) {
+		std::stringstream ss;
+		ss << "Erro ao criar o evento para mandar notificações (" << GetLastError() << ")";
+		throw std::runtime_error(ss.str());
+	}
+
 	servidor.hNotifyThread = CreateThread(NULL, 0, notifyRoutine, &servidor, 0, NULL);
 	if (servidor.hNotifyThread == NULL) {
 		std::stringstream ss;
@@ -106,11 +124,24 @@ DWORD WINAPI NamedPipe::dataRoutine(LPVOID lpParam) {
 
 	//TODO: data manager logic (basiclly remove close handles)
 	/*TODO
-	  - wait event
-	  - enter CS
+	  x wait event
+	  x enter CS
 	  - re-organize data
-	  - leave CS
+	  x leave CS
 	*/
+
+	while (data->isRunning) {
+		WaitForSingleObject(data->hDataEvent, INFINITE);
+
+		if (!data->isRunning)
+			break;
+
+		EnterCriticalSection(&data->cs);
+
+		//TODO: data manager logic
+
+		LeaveCriticalSection(&data->cs);
+	}
 
 	return 0;
 }
@@ -161,7 +192,7 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 
 				if (UserManager::addUser(*data, &user)) {
 					user.connected = true;
-					TDATA newTDate = { data->isRunning, data->isPaused, data->userList, data->hUsersQueue, data->companyList, &user, data->cs };
+					TDATA newTDate = { data->isRunning, data->isPaused, data->userList, data->hUsersQueue, data->companyList, data->notifyData, &user, data->cs };
 					data->tDataList.push_back(newTDate);
 
 					std::_tcout << _T("Criando thread para comunicação com cliente...") << std::endl;
@@ -202,12 +233,36 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 
 DWORD WINAPI NamedPipe::notifyRoutine(LPVOID lpParam) {
 	BOLSA* data = (BOLSA*)lpParam;
+	std::_tstringstream ss;
+	NOTIFY_DATA notify;
+	MESSAGE msg;
+	msg.code = CODE_NOTIFY;
 
 	//TODO: notify system
 	/*TODO
-	  - wait for event
-	  - send all users the message
+	  x wait for event
+	  x send all users the message
 	*/
+
+	while (data->isRunning) {
+		WaitForSingleObject(data->hNotifyEvent, INFINITE);
+
+		if (!data->isRunning)
+			break;
+
+		//TODO: format message
+		//TODO: mutex OR cs
+		notify = data->notifyData;
+
+		ss.str(std::TSTRING());
+
+		ss <<_T("O preço da empresa ") << notify.company->name << _T(" foi alterado de ") << notify.oldPrice << _T(" para ") << notify.company->pricePerStock;
+		_tcscpy_s(msg.data, ss.str().c_str());
+
+		std::_tcout << TAG_NORMAL << ss.str();
+
+		sendAll(data->userList, msg);
+	}
 
 	return 0;
 }
@@ -344,8 +399,12 @@ void NamedPipe::send(PIPE_INST hPipeInst, MESSAGE msg) {
 	}
 }
 
-void NamedPipe::sendAll(BOLSA& servidor, MESSAGE msg) {
-	//TODO: send message to all users (connected + queue)
+void NamedPipe::sendAll(USER_LIST userList, MESSAGE msg) {
+	//TODO: send message to all users (connected + queue?)
+	for (auto &user : userList) {
+		if (user.connected)
+			send(user.hPipeInst, msg);
+	}
 }
 
 void NamedPipe::responseList(TDATA& data) {
@@ -396,8 +455,9 @@ void NamedPipe::responseBuy(TDATA& data, std::TSTRING companyName, DWORD amount)
 	else {
 		if (SWManager::addStock(*data.myUser, *company, amount)) {
 			_tcscpy_s(msg.data, _T("Compra efetuada com sucesso"));
-			CompanyManager::updateStock(*company, CompanyManager::BUY);
-		} else
+			CompanyManager::updateStock(data.notifyData, *company, CompanyManager::BUY);
+		}
+		else
 			_tcscpy_s(msg.data, _T("Chegates ao limites de stocks que podes ter"));
 	}
 
@@ -423,12 +483,13 @@ void NamedPipe::responseSell(TDATA& data, std::TSTRING companyName, DWORD amount
 
 	else if (SWManager::removeStock(*data.myUser, *company, amount)) {
 		_tcscpy_s(msg.data, _T("Venda efetuada com sucesso"));
-		CompanyManager::updateStock(*company, CompanyManager::SELL);
+		CompanyManager::updateStock(data.notifyData, *company, CompanyManager::SELL);
 	} else
 		_tcscpy_s(msg.data, _T("Não tens esse número de ações para vender"));
 
 	msg.code = CODE_GENERIC_FEEDBACK;
 	send(data.myUser->hPipeInst, msg);
+
 }
 
 void NamedPipe::responseBalance(TDATA& data) {
@@ -443,13 +504,12 @@ void NamedPipe::responseBalance(TDATA& data) {
 	send(data.myUser->hPipeInst, msg);
 }
 
-//TODO [DEBUG]: something is throwing an exception
 void NamedPipe::close(BOLSA& servidor) {
 	std::_tcout << _T("A fechar o named pipe do servidor...") << std::endl;
 
 	for (auto& user : servidor.userList) {
 		if (user.connected || user.inQueue) {
-			std::_tcout << _T("A fechar o named pipe do cliente ") << user.name;
+			std::_tcout << _T("A fechar o named pipe do cliente ") << user.name << _T("...");
 
 			user.connected = false;
 
@@ -458,6 +518,8 @@ void NamedPipe::close(BOLSA& servidor) {
 
 			CloseHandle(user.hPipeInst.hPipe);
 			CloseHandle(user.hPipeInst.hEvent);
+
+			std::_tcout << _T(" Sucesso") << std::endl;
 		}
 	}
 
@@ -469,11 +531,15 @@ void NamedPipe::close(BOLSA& servidor) {
 	WaitForSingleObject(servidor.hReciverThread, INFINITE);
 	CloseHandle(servidor.hReciverThread);
 
+	SetEvent(servidor.hNotifyEvent);
 	WaitForSingleObject(servidor.hNotifyThread, INFINITE);
 	CloseHandle(servidor.hNotifyThread);
+	CloseHandle(servidor.hNotifyEvent);
 
+	SetEvent(servidor.hDataEvent);
 	WaitForSingleObject(servidor.hDataThread, INFINITE);
 	CloseHandle(servidor.hDataThread);
+	CloseHandle(servidor.hDataEvent);
 
 	DeleteCriticalSection(&servidor.cs);
 

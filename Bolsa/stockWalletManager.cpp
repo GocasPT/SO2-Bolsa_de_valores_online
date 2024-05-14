@@ -34,7 +34,7 @@ bool SWManager::addStock(USER_DATA& user, COMPANY& company, DWORD numOfStocks) {
 	company.numFreeStocks -= numOfStocks;
 	user.balance -= numOfStocks * company.pricePerStock;
 
-	CompanyManager::updateStock(company, CompanyManager::BUY);
+	//CompanyManager::updateStock(company, CompanyManager::BUY);
 
 	return true;
 }

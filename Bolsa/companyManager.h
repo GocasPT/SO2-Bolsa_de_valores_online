@@ -15,7 +15,7 @@ namespace CompanyManager {
 	void listCompanies(BOLSA &servidor);
 	COMPANY* getCompany(COMPANY_LIST& companyList, std::TSTRING name);
 	void updateStock(BOLSA& servidor, std::TSTRING name, DWORD pricePerStock);
-	void updateStock(COMPANY& company, OPERATION opType);
+	void updateStock(NOTIFY_DATA& notifyData, COMPANY& company, OPERATION opType);
 	void pauseCompaniesOps(BOLSA& servidor, int time);
 	DWORD WINAPI timerRoutine(LPVOID lpParam);
 	void close(BOLSA& servidor);
