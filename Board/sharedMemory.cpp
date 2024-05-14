@@ -14,7 +14,7 @@ void SharedMemory::connect(BOARD& board) {
         return;
     }
 
-    board.hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, EVENT_NAME);
+    board.hEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, EVENT_NAME);
     if (board.hEvent == NULL) {
         std::_tcout << _T("[ERRO] Falha na abertura do evento para acesso à memória partilhada: ") << GetLastError() << std::endl;
         close(board);
@@ -29,11 +29,13 @@ void SharedMemory::connect(BOARD& board) {
 void SharedMemory::read(BOARD& board) {
     WaitForSingleObject(board.hEvent, INFINITE);
 	CopyMemory(&board.data, board.sharedMemory, sizeof(SHARED_MEMORY));
+    //TODO: recebe a lista depois faz um 'crop' para o tamanho certo (recebe tudo, depois mostrar/guarda na memória a parte que quer)
+
+    board.sharedMemory->boardsRead++;
 
     std::_tcout << _T("Boards Connected: ") << board.sharedMemory->numBoards << std::endl;
     std::_tcout << _T("Boards Read: ") << board.sharedMemory->boardsRead << std::endl;
 
-    board.sharedMemory->boardsRead++;
     if (board.sharedMemory->boardsRead == board.sharedMemory->numBoards) {
         ResetEvent(board.hEvent);
     }
@@ -43,6 +45,8 @@ void SharedMemory::close(BOARD& board) {
     std::_tcout << _T("A fechar a memória partilhada...") << std::endl;
 
     CloseHandle(board.hEvent);
+
+    board.sharedMemory->numBoards--;
 
     UnmapViewOfFile(board.sharedMemory);
     CloseHandle(board.hSharedMemory);
