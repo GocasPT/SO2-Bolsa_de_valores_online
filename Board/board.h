@@ -7,6 +7,10 @@
 #include <vector>
 #include <queue>
 
+#define TAG_NORMAL _T("(BOARD) ")
+#define TAG_ERROR _T("[ERRO] ")
+#define TAG_WARNING _T("[WARNING] ")
+
 typedef struct {
 	/* GENERAL */
 	bool isRunning;
@@ -17,7 +21,9 @@ typedef struct {
 	HANDLE hEvent; // Event to trigger update on the shared memory
 	SHARED_MEMORY* sharedMemory;
 
+	HANDLE hConsoleThread;
+
 	SHARED_MEMORY data;
 } BOARD;
 
-#endif // !BOLSA_H
+#endif // !BOARD_H
