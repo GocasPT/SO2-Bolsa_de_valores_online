@@ -288,7 +288,7 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 			while (data->isRunning && data->myUser->connected) {
 				//TODO: add overlapped IO
 				ret = ReadFile(data->myUser->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &data->myUser->hPipeInst.oOverlap);
-				if (!ret || !nBytes) {
+				/*if (!ret || !nBytes) {
 					switch (GetLastError()) {
 						case ERROR_IO_PENDING:
 							WaitForSingleObject(data->myUser->hPipeInst.hEvent, INFINITE);
@@ -298,6 +298,44 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 						case ERROR_PIPE_NOT_CONNECTED:
 							std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Cliente ") << data->myUser->name << _T(" desconectado") << std::endl;
 							break;
+
+						default:
+							std::_tcout << std::endl << TAG_ERROR _T("[THREAD ") << tID << _T("] Erro ao ler a mensagem do cliente (") << GetLastError() << _T(")") << std::endl;
+							break;
+					}
+				}*/
+
+				if (!ret) {
+					switch (GetLastError()) {
+						case ERROR_IO_PENDING: {
+							bool pending = true;
+
+							while (pending) {
+								pending = false;
+
+								ret = GetOverlappedResult(data->myUser->hPipeInst.hPipe, &data->myUser->hPipeInst.oOverlap, &nBytes, FALSE);
+								if (!ret) {
+									switch (GetLastError()) {
+										case ERROR_IO_INCOMPLETE:
+											pending = true;
+											break;
+
+										case ERROR_BROKEN_PIPE:
+										case ERROR_PIPE_NOT_CONNECTED:
+											std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Cliente ") << data->myUser->name << _T(" desconectado") << std::endl;
+											break;
+
+										default:
+											std::_tcout << std::endl << TAG_ERROR _T("[THREAD ") << tID << _T("] Erro no resultado do 'GetOverlappedResult' (") << GetLastError() << _T(")") << std::endl;
+											break;
+									}
+								} else {
+									ResetEvent(data->myUser->hPipeInst.hEvent);
+								}
+							}
+
+							break;
+						}
 
 						default:
 							std::_tcout << std::endl << TAG_ERROR _T("[THREAD ") << tID << _T("] Erro ao ler a mensagem do cliente (") << GetLastError() << _T(")") << std::endl;
