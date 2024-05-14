@@ -81,6 +81,9 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 					break;
 			}
 
+			if (!data->isRunning)
+				break;
+
 			EnterCriticalSection(&data->cs); //TODO: move this down
 
 			if (auth(*data, loginUser)) {
@@ -150,7 +153,7 @@ bool NamedPipe::auth(BOLSA& servidor, USER& loginUser) {
 				throw std::runtime_error(ss.str());
 		}
 	}
-	
+
 	// Extrai os dados da mensagem
 	std::_tstringstream ss;
 	ss << msg.data;
@@ -204,6 +207,9 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 							break;
 					}
 				}
+
+				if (!data->myUser->connected)
+					break;
 
 				std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Mensagem recebida: ") << msg.data << _T(" [CODE: ") << msg.code << _T("]") << std::endl;
 
@@ -399,24 +405,24 @@ void NamedPipe::responseBalance(TDATA& data) {
 void NamedPipe::close(BOLSA& servidor) {
 	std::_tcout << _T("A fechar o named pipe do servidor...") << std::endl;
 
-	CloseHandle(servidor.hPipeInst.hPipe);
-	CloseHandle(servidor.hPipeInst.hEvent);
+	for (auto& user : servidor.userList) {
+		if (user.connected || user.inQueue) {
+			std::_tcout << _T("A fechar o named pipe do cliente ") << user.name;
 
-	for (DWORD i = 0; i < servidor.hUsersList.size(); i++) {
-		std::_tcout << _T("A fecher o named pipe do cliente ") << i + 1 << _T(" de ") << servidor.hUsersList.size() + 1;
+			user.connected = false;
 
-		if (!DisconnectNamedPipe(servidor.hUsersList[i].hPipe)) {
-			std::_tcout << std::endl << TAG_ERROR << _T("Erro ao fechar o pipe do cliente ") << i << _T(" (") << GetLastError() << _T(")") << std::endl;
+			if (!DisconnectNamedPipe(user.hPipeInst.hPipe))
+				std::_tcout << std::endl << TAG_ERROR << _T("Erro ao fechar o pipe do cliente ") << user.name << _T(" (") << GetLastError() << _T(")") << std::endl;
+
+			CloseHandle(user.hPipeInst.hPipe);
+			CloseHandle(user.hPipeInst.hEvent);
 		}
-
-		CloseHandle(servidor.hUsersList[i].hPipe);
-		CloseHandle(servidor.hUsersList[i].hEvent);
-		CloseHandle(servidor.hUsersThreadList[i]);
-
-		std::_tcout << _T(" | Fechado") << std::endl;
 	}
 
 	WaitForMultipleObjects((DWORD)servidor.hUsersThreadList.size(), servidor.hUsersThreadList.data(), TRUE, INFINITE);
+
+	CloseHandle(servidor.hPipeInst.hPipe);
+	CloseHandle(servidor.hPipeInst.hEvent);
 
 	WaitForSingleObject(servidor.hReciverThread, INFINITE);
 	CloseHandle(servidor.hReciverThread);

@@ -64,10 +64,10 @@ typedef struct {
 	HANDLE hEvent;					// Event to triggerto update the shared memory
 
 	/*---NAMED PIPE---*/
-	PIPE_INST hPipeInst;				// Current reciver pipe
+	PIPE_INST hPipeInst;			// Current reciver pipe
 	HANDLE hReciverThread;			// Reciver thread
 	HANDLE_LIST hUsersThreadList;	// Threads for comunication with clients
-	PIPE_INST_LIST hUsersList;			// List of clients connected
+	PIPE_INST_LIST hUsersList;		// List of clients connected
 	USER_QUEUE hUsersQueue;			// Queue of clients waiting to connect
 	TDATA_LIST tDataList;			// Data for each thread
 	CRITICAL_SECTION cs;			// Critical section for shared data

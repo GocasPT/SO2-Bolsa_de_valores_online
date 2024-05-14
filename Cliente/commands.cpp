@@ -86,6 +86,8 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 			SetEvent(userData.hEventConsole); //TODO: throw in erro [?]
 		}
 
+		NamedPipe::send(userData, { CODE_EXIT, _T('\0') });
+
 		SetEvent(userData.hEventConsole);
 		userData.runnig = false;
 		valid = true;

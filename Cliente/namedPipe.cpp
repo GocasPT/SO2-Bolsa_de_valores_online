@@ -88,6 +88,9 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 			}
 		}
 
+		if (GetLastError() == ERROR_BROKEN_PIPE || GetLastError() == ERROR_PIPE_NOT_CONNECTED)
+			break;
+
 		// Se não tiver feito login, ignora todas as mensagens exceto o login
 		if (!user->logged && msg.code != CODE_LOGIN)
 			continue;
@@ -263,8 +266,6 @@ void NamedPipe::requestBalance(CLIENTE& user) {
  * \param user - Estrutura com os dados do utilizador
  */
 void NamedPipe::close(CLIENTE& user) {
-	send(user, { CODE_EXIT, _T('\0') });
-
 	CancelIo(user.hPipeInst.hPipe);
 	SetEvent(user.hPipeInst.hEvent);
 
