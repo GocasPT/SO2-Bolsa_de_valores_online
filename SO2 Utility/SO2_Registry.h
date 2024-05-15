@@ -4,8 +4,6 @@
 
 #include "SO2_Utils.h"
 
-#define REGISTRY_PATH _T("Software\\SO2\\")
-
-// TODO: struct for registry data
+#define REGISTRY_PATH _T("Software\\SO2_TP\\")
 
 #endif // !SO2_REGISTRY_H

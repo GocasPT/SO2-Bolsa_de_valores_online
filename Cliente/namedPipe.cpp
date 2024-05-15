@@ -20,8 +20,8 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 		throw std::runtime_error(ss.str());
 	}
 
-	ZeroMemory(&user.hPipeInst.overlap, sizeof(OVERLAPPED));
-	user.hPipeInst.overlap.hEvent = user.hPipeInst.hEvent;
+	ZeroMemory(&user.hPipeInst.oOverlap, sizeof(OVERLAPPED));
+	user.hPipeInst.oOverlap.hEvent = user.hPipeInst.hEvent;
 	std::_tcout << _T("Overlap I/O preparado") << std::endl;
 
 	std::_tcout << _T("A conectar ao servidor...");
@@ -68,7 +68,7 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 
 	//TODO: exit doesnt work 100%
 	while (user->runnig) {
-		ret = ReadFile(user->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user->hPipeInst.overlap);
+		ret = ReadFile(user->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user->hPipeInst.oOverlap);
 		if (!ret || !nBytes) {
 			DWORD error = GetLastError();
 			if (error == ERROR_BROKEN_PIPE || error == ERROR_PIPE_NOT_CONNECTED) {
@@ -80,6 +80,7 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 
 			else if (error == ERROR_IO_PENDING) {
 				WaitForSingleObject(user->hPipeInst.hEvent, INFINITE);
+				ret = GetOverlappedResult(user->hPipeInst.hPipe, &user->hPipeInst.oOverlap, &nBytes, FALSE);
 			}
 
 			else {
@@ -87,6 +88,9 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 				return -1;
 			}
 		}
+
+		if (GetLastError() == ERROR_BROKEN_PIPE || GetLastError() == ERROR_PIPE_NOT_CONNECTED)
+			break;
 
 		// Se não tiver feito login, ignora todas as mensagens exceto o login
 		if (!user->logged && msg.code != CODE_LOGIN)
@@ -126,12 +130,16 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 				break;
 
 			case CODE_GENERIC_FEEDBACK:
-				std::_tcout << TAG_NORMAL << msg.data << std::endl; //TODO: change tag (server tag or feedback tag)
+				std::_tcout << TAG_NORMAL << msg.data << std::endl;
+				break;
+
+			case CODE_NOTIFY:
+				std::_tcout << std::endl << msg.data << std::endl << _T(">> ");
 				break;
 		}
 
 		//TODO: check if is in this position
-		SetEvent(user->hEventConsole); //TODO: throw in erro [?]
+		SetEvent(user->hEventConsole);
 	}
 
 	return 0;
@@ -149,15 +157,21 @@ void NamedPipe::send(CLIENTE& user, MESSAGE msg) {
 	BOOL ret;
 	DWORD nBytes;
 
-	//TODO: Add overlapped I/O maybe
-	ret = WriteFile(user.hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
-	if (!ret || !nBytes) {
-		std::stringstream ss;
-		ss << "Erro ao enviar a mensagem [ " << ret << " " << nBytes << "] ()" << GetLastError() << ")";
-		throw std::runtime_error(ss.str());
+	ret = WriteFile(user.hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user.hPipeInst.oOverlap);
+	if (!ret) {
+		switch (GetLastError()) {
+			case ERROR_IO_PENDING:
+				WaitForSingleObject(user.hPipeInst.hEvent, INFINITE);
+				ret = GetOverlappedResult(user.hPipeInst.hPipe, &user.hPipeInst.oOverlap, &nBytes, FALSE);
+				break;
+
+			default:
+				std::stringstream ss;
+				ss << "Erro ao enviar a mensagem [ " << ret << " " << nBytes << "] ()" << GetLastError() << ")";
+				throw std::runtime_error(ss.str());
+		}
 	}
 }
-
 
 /**
  * \brief Pedir ao servidor para fazer login
@@ -269,13 +283,6 @@ void NamedPipe::close(CLIENTE& user) {
 	WaitForSingleObject(user.hThread, INFINITE);
 
 	CloseHandle(user.hThread);
-
-	if (!DisconnectNamedPipe(user.hPipeInst.hPipe)) {
-		/*std::stringstream ss;
-		ss << "Erro ao desconectar o named pipe (" << GetLastError() << ")";
-		throw std::runtime_error(ss.str());*/
-		std::_tcout << TAG_ERROR << TEXT("Erro ao desconectar o named pipe") << std::endl;
-	}
 
 	CloseHandle(user.hPipeInst.hPipe);
 	CloseHandle(user.hPipeInst.hEvent);

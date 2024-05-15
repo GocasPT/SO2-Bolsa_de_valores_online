@@ -49,7 +49,6 @@ bool cmd::validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args) {
 
 		/*
 		* Comando: Acrescentar uma empresa
-		*
 		* Formato: addc <nome-empresa> <número-ações> <preço-ação>
 		*/
 		else if (!args[0].compare(CMD_ADDC)) {

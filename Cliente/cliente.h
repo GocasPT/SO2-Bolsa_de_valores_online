@@ -11,15 +11,14 @@
 #define EVENT_CONSOLE _T("ClienteConsole")
 
 typedef struct {
-	HANDLE hPipe;
-	OVERLAPPED overlap;
-	HANDLE hEvent;
+	OVERLAPPED oOverlap;
+	HANDLE hPipe, hEvent;
 } PIPE_INST;
 
 typedef struct {
 	bool logged;
 	bool inQueue;
-	TCHAR name[MAX];
+	TCHAR name[MAX_TCHAR];
 	PIPE_INST hPipeInst;
 	DWORD pipeMode;
 	HANDLE hThread;
