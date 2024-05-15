@@ -53,4 +53,10 @@ typedef struct {
 	float pricePerStock;
 } COMPANY;
 
+typedef struct {
+	TCHAR companyName[MAX];
+	DWORD numStocks;
+	float value;
+} TRANSACTION;
+
 #endif // !SO2_UTILS_H

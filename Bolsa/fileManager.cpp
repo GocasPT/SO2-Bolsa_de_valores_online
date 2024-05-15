@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <atlstr.h>
+//#include <atlstr.h>
 
 void Files::read_files(BOLSA& servidor) {
 	std::_tcout << _T("A ler ficheiros... (0/") << TOTAL_FILES << _T(")") << std::endl;

@@ -1,5 +1,6 @@
 ﻿#include "companyManager.h"
 #include "namedPipe.h"
+#include "sharedMemory.h"
 #include <sstream>
 
 void CompanyManager::config(BOLSA& servidor) {
@@ -39,6 +40,8 @@ void CompanyManager::addCompany(BOLSA& servidor, std::TSTRING name, DWORD numOfS
 	servidor.companyList.push_back(company);
 
 	std::_tcout << TAG_NORMAL << _T("Empresa adicionada com sucesso") << std::endl << _T("Nome: ") << name << _T(" | Nº de Ações: ") << company.numFreeStocks << _T(" | Preço por Ação: ") << company.pricePerStock << std::endl << std::endl;
+
+	SharedMemory::update(servidor);
 }
 
 void CompanyManager::listCompanies(BOLSA& servidor) {
