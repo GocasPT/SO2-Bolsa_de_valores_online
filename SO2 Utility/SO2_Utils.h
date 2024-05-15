@@ -54,7 +54,7 @@ typedef struct {
 } COMPANY;
 
 typedef struct {
-	TCHAR companyName[MAX];
+	TCHAR companyName[MAX_TCHAR];
 	DWORD numStocks;
 	float value;
 } TRANSACTION;

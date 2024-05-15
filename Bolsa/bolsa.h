@@ -72,13 +72,9 @@ typedef struct {
 	HANDLE hDataEvent;				// Event to triggerto update the data
 
 	/* SHARED MEMORY */
-	HANDLE hSharedMemory; // Handle shared memory
-	HANDLE hEvent; // Event to triggerto update the shared memory
-	SHARED_MEMORY* sharedMemory;
-
-	/*---SHARED MEMORY---*/
 	HANDLE hSharedMemory;			// Handle shared memory
-	HANDLE hSHEvent;				// Event to triggerto update the shared memory
+	HANDLE hEvent;					// Event to triggerto update the shared memory
+	SHARED_MEMORY* sharedMemory;
 
 	/*---NAMED PIPE---*/
 	PIPE_INST hPipeInst;			// Current reciver pipe
