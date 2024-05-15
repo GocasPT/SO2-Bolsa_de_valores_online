@@ -4,6 +4,7 @@
 
 #include "SO2_Utils.h"
 #include <vector>
+#include <list>
 #include <queue>
 
 #define TAG_NORMAL _T("(BOLSA) ")
@@ -49,7 +50,7 @@ typedef struct {
 	HANDLE hSHEvent;
 } TIMER_DATA;
 
-typedef std::vector<TDATA> TDATA_LIST;
+typedef std::list<TDATA> TDATA_LIST;
 
 typedef struct {
 	/*---GENERAL---*/

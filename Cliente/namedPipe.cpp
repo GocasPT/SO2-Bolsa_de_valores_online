@@ -80,6 +80,7 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 
 			else if (error == ERROR_IO_PENDING) {
 				WaitForSingleObject(user->hPipeInst.hEvent, INFINITE);
+				ret = GetOverlappedResult(user->hPipeInst.hPipe, &user->hPipeInst.oOverlap, &nBytes, FALSE);
 			}
 
 			else {
@@ -156,15 +157,21 @@ void NamedPipe::send(CLIENTE& user, MESSAGE msg) {
 	BOOL ret;
 	DWORD nBytes;
 
-	//TODO: Add overlapped I/O maybe
-	ret = WriteFile(user.hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, NULL);
-	if (!ret || !nBytes) {
-		std::stringstream ss;
-		ss << "Erro ao enviar a mensagem [ " << ret << " " << nBytes << "] ()" << GetLastError() << ")";
-		throw std::runtime_error(ss.str());
+	ret = WriteFile(user.hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user.hPipeInst.oOverlap);
+	if (!ret) {
+		switch (GetLastError()) {
+			case ERROR_IO_PENDING:
+				WaitForSingleObject(user.hPipeInst.hEvent, INFINITE);
+				ret = GetOverlappedResult(user.hPipeInst.hPipe, &user.hPipeInst.oOverlap, &nBytes, FALSE);
+				break;
+
+			default:
+				std::stringstream ss;
+				ss << "Erro ao enviar a mensagem [ " << ret << " " << nBytes << "] ()" << GetLastError() << ")";
+				throw std::runtime_error(ss.str());
+		}
 	}
 }
-
 
 /**
  * \brief Pedir ao servidor para fazer login
