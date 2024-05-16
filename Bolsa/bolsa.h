@@ -11,6 +11,7 @@
 
 #define EVENT_CONSOLE _T("ServerConsole")
 #define EVENT_TIMER _T("ServerTimer")
+#define EVENT_DATA _T("ServerData")
 
 typedef struct {
 	OVERLAPPED oOverlap;
@@ -41,6 +42,7 @@ typedef struct {
 	NOTIFY_DATA& notifyData;
 	USER* myUser;
 	CRITICAL_SECTION& cs;
+	DWORD tID;
 } TDATA;
 
 typedef struct {

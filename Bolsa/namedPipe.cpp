@@ -37,7 +37,7 @@ void NamedPipe::config(BOLSA& servidor) {
 	InitializeCriticalSection(&servidor.cs);
 
 	/*---THREAD PARA GERIR LISTAS---*/
-	servidor.hDataEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	servidor.hDataEvent = CreateEvent(NULL, FALSE, FALSE, EVENT_DATA);
 	if (servidor.hDataEvent == NULL) {
 		std::stringstream ss;
 		ss << "Erro ao criar o evento para gerir as listas (" << GetLastError() << ")";
@@ -122,14 +122,8 @@ bool NamedPipe::auth(BOLSA& servidor, USER& loginUser) {
 
 DWORD WINAPI NamedPipe::dataRoutine(LPVOID lpParam) {
 	BOLSA* data = (BOLSA*)lpParam;
-
-	//TODO: data manager logic (basiclly remove close handles)
-	/*TODO
-	  x wait event
-	  x enter CS
-	  - re-organize data
-	  x leave CS
-	*/
+	BOOL res;
+	DWORD code;
 
 	while (data->isRunning) {
 		WaitForSingleObject(data->hDataEvent, INFINITE);
@@ -137,12 +131,43 @@ DWORD WINAPI NamedPipe::dataRoutine(LPVOID lpParam) {
 		if (!data->isRunning)
 			break;
 
-		EnterCriticalSection(&data->cs);
+		for (auto it = data->hUsersThreadList.begin(); it != data->hUsersThreadList.end(); ) {
+			WaitForSingleObject(*it, 1000); // Espera 1 segundo pela thread (caso ela termine e retorne o código)
+			res = GetExitCodeThread(*it, &code);
+			if (!res) {
+				std::_tcout << TAG_ERROR << _T("Erro ao obter o código de saída da thread") << std::endl;
+				LeaveCriticalSection(&data->cs);
+				return 1;
+			}
 
-		//TODO: data manager logic
-		//TODO: lick TData with Thread (better select)
+			if (code == STILL_ACTIVE)
+				continue;
+			else {
+				EnterCriticalSection(&data->cs);
 
-		LeaveCriticalSection(&data->cs);
+				auto tDataIt = std::find_if(data->tDataList.begin(), data->tDataList.end(),
+					[code](TDATA tData) { return tData.tID == code; });
+
+				if (tDataIt == data->tDataList.end()) {
+					//TODO: error
+					continue;
+				}
+
+				std::_tcout << std::endl << _T("A apagar os dados da thread de ID ") << code << std::endl;
+
+				data->tDataList.erase(tDataIt);
+				CloseHandle(*it);
+				data->hUsersThreadList.erase(it);
+
+				LeaveCriticalSection(&data->cs);
+
+				// Voltar a por os caracteres de input
+				if (data->isRunning)
+					std::_tcout << TAG_INPUT;
+
+				break;
+			}
+		}
 	}
 
 	return 0;
@@ -152,6 +177,7 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 	BOLSA* data = (BOLSA*)lpParam;
 	USER loginUser;
 	BOOL ret;
+	DWORD nBytes;
 
 	std::_tcout << TAG_NORMAL << _T("A espera de um cliente para conectar...") << std::endl;
 
@@ -162,11 +188,17 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 				switch (GetLastError()) {
 					case ERROR_IO_PENDING:
 						WaitForSingleObject(data->hPipeInst.hEvent, INFINITE);
-						ret = TRUE;
+						//ret = TRUE;
+						ret = GetOverlappedResult(data->hPipeInst.hPipe, &data->hPipeInst.oOverlap, &nBytes, TRUE);
+						break;
+
+					case ERROR_OPERATION_ABORTED:
+						ret = true;
 						break;
 
 					case ERROR_BROKEN_PIPE:
 					case ERROR_PIPE_CONNECTED:
+					case ERROR_PIPE_LISTENING:
 						std::_tcout << std::endl << TAG_ERROR << _T("O cliente já está conectado") << std::endl;
 						return 1;
 
@@ -176,6 +208,9 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 						throw std::runtime_error(ss.str());
 				}
 			}
+
+			if (!data->isRunning)
+				break;
 
 			EnterCriticalSection(&data->cs); //TODO: move this down
 
@@ -191,7 +226,7 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 					user.connected = true;
 					TDATA newTDate = { data->isRunning, data->isPaused, // Referencias
 						data->userList, data->hUsersQueue, data->companyList, // Listas
-						data->notifyData, &user, data->cs // Dados + CS
+						data->notifyData, &user, data->cs,  0 // Dados + CS
 					};
 					data->tDataList.push_back(newTDate);
 
@@ -281,6 +316,7 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 	std::_tstringstream ss;
 
 	tID = tIDCount++;
+	data->tID = tID;
 	std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Iniciada, pronto para receber pedidos");
 
 	try {
@@ -301,6 +337,7 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 
 						case ERROR_BROKEN_PIPE:
 						case ERROR_PIPE_NOT_CONNECTED:
+						case ERROR_OPERATION_ABORTED:
 							std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Cliente ") << data->myUser->name << _T(" desconectado") << std::endl;
 							data->myUser->connected = false;
 							ret = TRUE;
@@ -381,11 +418,18 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 		std::_tcout << TAG_ERROR << e.what() << std::endl;
 	}
 
-	//TODO: delete this tData from list
-	//TODO: thread/resource manager (thread exit, remove from list)
-	std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Não existe nenhum cliente para atener. A sair...") << std::endl << TAG_INPUT;
+	std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Não existe nenhum cliente para atener. A sair...") << std::endl;
 
-	return 0;
+	// Sinaliza a thread de dados para remover esta thread e o seu TData da lista
+	HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, EVENT_DATA);
+	if (hEvent == NULL) {
+		std::_tcout << TAG_ERROR << _T("Erro ao abrir o evento para notificar o fim da thread") << std::endl;
+		return tID;
+	}
+
+	SetEvent(hEvent); // Remove TData desta thread da lista
+
+	return tID;
 }
 
 void NamedPipe::send(PIPE_INST hPipeInst, MESSAGE msg) {
