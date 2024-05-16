@@ -87,7 +87,7 @@ bool NamedPipe::auth(BOLSA& servidor, USER& loginUser) {
 
 	// Lê a mensagem de login do cliente
 	ret = ReadFile(servidor.hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &servidor.hPipeInst.oOverlap);
-	if (!ret) {
+	while (!ret) {
 		switch (GetLastError()) {
 			case ERROR_IO_PENDING:
 				WaitForSingleObject(servidor.hPipeInst.hEvent, INFINITE);
@@ -140,6 +140,7 @@ DWORD WINAPI NamedPipe::dataRoutine(LPVOID lpParam) {
 		EnterCriticalSection(&data->cs);
 
 		//TODO: data manager logic
+		//TODO: lick TData with Thread (better select)
 
 		LeaveCriticalSection(&data->cs);
 	}
@@ -157,26 +158,24 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 	try {
 		while (data->isRunning) {
 			ret = ConnectNamedPipe(data->hPipeInst.hPipe, &data->hPipeInst.oOverlap);
-			if (!ret) {
+			while (!ret) {
 				switch (GetLastError()) {
 					case ERROR_IO_PENDING:
 						WaitForSingleObject(data->hPipeInst.hEvent, INFINITE);
+						ret = TRUE;
 						break;
 
 					case ERROR_BROKEN_PIPE:
 					case ERROR_PIPE_CONNECTED:
-						break;
+						std::_tcout << std::endl << TAG_ERROR << _T("O cliente já está conectado") << std::endl;
+						return 1;
 
 					default:
 						std::stringstream ss;
 						ss << "Erro ao conectar o cliente ao named pipe do servidor (" << GetLastError() << ")";
 						throw std::runtime_error(ss.str());
-						break;	
 				}
 			}
-
-			if (!data->isRunning)
-				break;
 
 			EnterCriticalSection(&data->cs); //TODO: move this down
 
@@ -222,7 +221,7 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 
 			LeaveCriticalSection(&data->cs); //TODO: move this up
 
-			std::_tcout << _T(">> ");
+			std::_tcout << TAG_INPUT;
 		}
 	} catch (std::runtime_error& e) {
 		std::_tcout << std::endl << TAG_ERROR << e.what() << std::endl;
@@ -266,6 +265,8 @@ DWORD WINAPI NamedPipe::notifyRoutine(LPVOID lpParam) {
 		std::_tcout << TAG_NORMAL << ss.str();
 
 		sendAll(data->userList, msg);
+
+		std::_tcout << TAG_INPUT;
 	}
 
 	return 0;
@@ -291,28 +292,18 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 
 			while (data->isRunning && data->myUser->connected) {
 				ret = ReadFile(data->myUser->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &data->myUser->hPipeInst.oOverlap);
-				if (!ret) {
+				while (!ret) {
 					switch (GetLastError()) {
 						case ERROR_IO_PENDING:
 							WaitForSingleObject(data->myUser->hPipeInst.hEvent, INFINITE);
 							ret = GetOverlappedResult(data->myUser->hPipeInst.hPipe, &data->myUser->hPipeInst.oOverlap, &nBytes, TRUE);
-							if (!ret) {
-								switch (GetLastError()) {
-									case ERROR_SUCCESS:
-										break;
+							break;
 
-									case ERROR_BROKEN_PIPE:
-									case ERROR_PIPE_NOT_CONNECTED:
-										std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Cliente ") << data->myUser->name << _T(" desconectado") << std::endl;
-										data->myUser->connected = false;
-										break;
-
-									default:
-										std::_tcout << std::endl << TAG_ERROR _T("[THREAD ") << tID << _T("] Erro no resultado do 'GetOverlappedResult' (") << GetLastError() << _T(")") << std::endl;
-										//TODO: broke pipe/connection
-										return 1;
-								}
-							}
+						case ERROR_BROKEN_PIPE:
+						case ERROR_PIPE_NOT_CONNECTED:
+							std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Cliente ") << data->myUser->name << _T(" desconectado") << std::endl;
+							data->myUser->connected = false;
+							ret = TRUE;
 							break;
 
 						default:
@@ -377,6 +368,8 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 				ss.clear();
 				ss.flush();
 				ss.str(std::TSTRING());
+
+				std::_tcout << TAG_INPUT;
 			}
 
 			EnterCriticalSection(&data->cs);
@@ -390,7 +383,7 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 
 	//TODO: delete this tData from list
 	//TODO: thread/resource manager (thread exit, remove from list)
-	std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Não existe nenhum cliente para atener. A sair...") << std::endl;
+	std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Não existe nenhum cliente para atener. A sair...") << std::endl << TAG_INPUT;
 
 	return 0;
 }
@@ -400,7 +393,7 @@ void NamedPipe::send(PIPE_INST hPipeInst, MESSAGE msg) {
 	DWORD nBytes;
 
 	ret = WriteFile(hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &hPipeInst.oOverlap);
-	if (!ret) {
+	while (!ret) {
 		switch (GetLastError()) {
 			case ERROR_IO_PENDING:
 				WaitForSingleObject(hPipeInst.hEvent, INFINITE);
@@ -531,7 +524,7 @@ void NamedPipe::close(BOLSA& servidor) {
 			std::_tcout << _T("A fechar o named pipe do cliente ") << user.name << _T("...");
 
 			user.connected = false;
-			CancelIo(user.hPipeInst.hPipe);
+			CancelIoEx(user.hPipeInst.hPipe, &user.hPipeInst.oOverlap);
 
 			if (!DisconnectNamedPipe(user.hPipeInst.hPipe))
 				std::_tcout << std::endl << TAG_ERROR << _T("Erro ao fechar o pipe do cliente ") << user.name << _T(" (") << GetLastError() << _T(")") << std::endl;
@@ -546,9 +539,9 @@ void NamedPipe::close(BOLSA& servidor) {
 
 	WaitForMultipleObjects((DWORD)servidor.hUsersThreadList.size(), servidor.hUsersThreadList.data(), TRUE, INFINITE);
 
-	CancelIo(servidor.hPipeInst.hPipe);
+	CancelIoEx(servidor.hPipeInst.hPipe, &servidor.hPipeInst.oOverlap);
 	
-	WaitForSingleObject(servidor.hReciverThread, INFINITE);
+	WaitForSingleObject(servidor.hReciverThread, INFINITE); //TODO: error
 	CloseHandle(servidor.hReciverThread);
 	CloseHandle(servidor.hPipeInst.hPipe);
 	CloseHandle(servidor.hPipeInst.hEvent);

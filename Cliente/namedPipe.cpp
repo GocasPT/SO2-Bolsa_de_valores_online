@@ -66,31 +66,30 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 
 	std::_tcout << _T("A espera de autenticação... ");
 
-	//TODO: exit doesnt work 100%
 	while (user->runnig) {
 		ret = ReadFile(user->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user->hPipeInst.oOverlap);
-		if (!ret || !nBytes) {
-			DWORD error = GetLastError();
-			if (error == ERROR_BROKEN_PIPE || error == ERROR_PIPE_NOT_CONNECTED) {
-				std::_tcout << TAG_NORMAL << TEXT("O servidor encerrou. Precione o 'Enter' para sair do programa...") << std::endl;
-				user->runnig = false;
-				user->logged = false;
-				return 3;
-			}
+		while (!ret) {
+			switch (GetLastError()) {
+				case ERROR_IO_PENDING:
+					WaitForSingleObject(user->hPipeInst.hEvent, INFINITE);
+					ret = GetOverlappedResult(user->hPipeInst.hPipe, &user->hPipeInst.oOverlap, &nBytes, FALSE);
+					break;
 
-			else if (error == ERROR_IO_PENDING) {
-				WaitForSingleObject(user->hPipeInst.hEvent, INFINITE);
-				ret = GetOverlappedResult(user->hPipeInst.hPipe, &user->hPipeInst.oOverlap, &nBytes, FALSE);
-			}
+				case ERROR_BROKEN_PIPE:
+				case ERROR_PIPE_NOT_CONNECTED:
+					std::_tcout << TAG_ERROR << TEXT("O servidor encerrou. Precione o 'Enter' para sair do programa...") << std::endl;
+					user->runnig = false;
+					user->logged = false;
+					return THREAD_CODE::STOP;
 
-			else {
-				std::_tcout << TAG_ERROR << TEXT("Erro ao ler a mensagem (") << GetLastError() << _T(")") << std::endl;
-				return -1;
+				case ERROR_OPERATION_ABORTED:
+					return THREAD_CODE::SUCESS;
+
+				default:
+					std::_tcout << TAG_ERROR << TEXT("Erro ao ler a mensagem (") << GetLastError() << _T(")") << std::endl;
+					return THREAD_CODE::ERRO;
 			}
 		}
-
-		if (GetLastError() == ERROR_BROKEN_PIPE || GetLastError() == ERROR_PIPE_NOT_CONNECTED)
-			break;
 
 		// Se não tiver feito login, ignora todas as mensagens exceto o login
 		if (!user->logged && msg.code != CODE_LOGIN)
@@ -134,15 +133,14 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 				break;
 
 			case CODE_NOTIFY:
-				std::_tcout << std::endl << msg.data << std::endl << _T(">> ");
+				std::_tcout << std::endl << msg.data << std::endl << TAG_INPUT;
 				break;
 		}
 
-		//TODO: check if is in this position
 		SetEvent(user->hEventConsole);
 	}
 
-	return 0;
+	return THREAD_CODE::SUCESS;
 }
 
 /**
@@ -158,7 +156,7 @@ void NamedPipe::send(CLIENTE& user, MESSAGE msg) {
 	DWORD nBytes;
 
 	ret = WriteFile(user.hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user.hPipeInst.oOverlap);
-	if (!ret) {
+	while (!ret) {
 		switch (GetLastError()) {
 			case ERROR_IO_PENDING:
 				WaitForSingleObject(user.hPipeInst.hEvent, INFINITE);
@@ -277,8 +275,7 @@ void NamedPipe::requestBalance(CLIENTE& user) {
  * \param user - Estrutura com os dados do utilizador
  */
 void NamedPipe::close(CLIENTE& user) {
-	CancelIo(user.hPipeInst.hPipe);
-	SetEvent(user.hPipeInst.hEvent);
+	CancelIoEx(user.hPipeInst.hPipe, &user.hPipeInst.oOverlap);
 
 	WaitForSingleObject(user.hThread, INFINITE);
 

@@ -5,8 +5,6 @@
 #include "SO2_Utils.h"
 
 #define TAG_NORMAL _T("(CLIENTE) ")
-#define TAG_ERROR _T("[ERRO] ")
-#define TAG_WARNING _T("[WARNING] ")
 
 #define EVENT_CONSOLE _T("ClienteConsole")
 
@@ -16,15 +14,14 @@ typedef struct {
 } PIPE_INST;
 
 typedef struct {
+	bool runnig;
 	bool logged;
 	bool inQueue;
 	TCHAR name[MAX_TCHAR];
 	PIPE_INST hPipeInst;
 	DWORD pipeMode;
 	HANDLE hThread;
-
-	HANDLE hEventConsole; // Evento para desbloquear a (thread do) console
-	bool runnig;
+	HANDLE hEventConsole; // Evento para desbloquear a console
 } CLIENTE;
 
 #endif // !CLIENTE_H

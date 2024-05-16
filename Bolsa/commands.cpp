@@ -12,7 +12,7 @@ void cmd::consoleRoutine(BOLSA& servidor) {
 		args.clear();
 		ss.clear();
 
-		std::_tcout << _T(">> ");
+		std::_tcout << TAG_INPUT;
 		std::getline(std::_tcin, input);
 
 		ss << input;

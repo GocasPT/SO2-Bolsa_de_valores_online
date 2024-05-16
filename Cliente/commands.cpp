@@ -16,7 +16,7 @@ void cmd::consoleRoutine(CLIENTE& user) {
 		args.clear();
 		ss.clear();
 
-		std::_tcout << _T(">> ");
+		std::_tcout << TAG_INPUT;
 		std::getline(std::_tcin, input);
 
 		if (input.empty())
@@ -30,6 +30,8 @@ void cmd::consoleRoutine(CLIENTE& user) {
 			std::_tcout << TAG_WARNING << _T("Comando inválido") << std::endl;
 			continue;
 		}
+
+		WaitForSingleObject(user.hEventConsole, INFINITE);
 	} while (input.compare(CMD_EXIT) != 0 && user.runnig);
 }
 
@@ -86,7 +88,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 			SetEvent(userData.hEventConsole); //TODO: throw in erro [?]
 		}
 
-		NamedPipe::send(userData, { CODE_EXIT, _T('\0') });
+		//NamedPipe::send(userData, { CODE_EXIT, _T('\0') });
 
 		SetEvent(userData.hEventConsole);
 		userData.runnig = false;
@@ -161,11 +163,6 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 			NamedPipe::requestBalance(userData);
 
 		valid = true;
-	}
-
-	if (valid) {
-		WaitForSingleObject(userData.hEventConsole, INFINITE);
-		ResetEvent(userData.hEventConsole);
 	}
 
 	return valid;
