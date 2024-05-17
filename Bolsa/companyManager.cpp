@@ -71,6 +71,7 @@ COMPANY* CompanyManager::getCompany(COMPANY_LIST& companyList, std::TSTRING name
 }
 
 void CompanyManager::updateStock(BOLSA& servidor, std::TSTRING name, float pricePerStock) {
+	//TODO: fix variation
 	COMPANY* company = getCompany(servidor.companyList, name);
 	if (company == nullptr) {
 		std::_tcout << TAG_WARNING << _T("Empresa não encontrada") << std::endl;
@@ -93,6 +94,7 @@ void CompanyManager::updateStock(BOLSA& servidor, std::TSTRING name, float price
 }
 
 void CompanyManager::updateStock(NOTIFY_DATA& notifyData, COMPANY& company, OPERATION opType) {
+	//TODO: fix variation
 	float variation = (rand() % 100) / 100.0f;
 	float oldPrice = company.pricePerStock;
 
