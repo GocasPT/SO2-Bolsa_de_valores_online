@@ -3,6 +3,7 @@
 #define BOLSA_H
 
 #include "SO2_Utils.h"
+#include "SO2_SharedMemory.h"
 #include <vector>
 #include <list>
 #include <queue>
@@ -81,9 +82,10 @@ typedef struct {
 	HANDLE hDataThread;				// Data thread
 	HANDLE hDataEvent;				// Event to triggerto update the data
 
-	/*---SHARED MEMORY---*/
+	/* SHARED MEMORY */
 	HANDLE hSharedMemory;			// Handle shared memory
-	HANDLE hSHEvent;				// Event to triggerto update the shared memory
+	HANDLE hEvent;					// Event to triggerto update the shared memory
+	SHARED_MEMORY* sharedMemory;
 
 	/*---NAMED PIPE---*/
 	PIPE_INST hPipeInst;			// Current reciver pipe

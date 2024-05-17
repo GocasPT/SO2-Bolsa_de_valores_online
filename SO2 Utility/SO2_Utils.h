@@ -54,6 +54,12 @@ typedef struct {
 	float pricePerStock;
 } COMPANY;
 
+typedef struct {
+	TCHAR companyName[MAX_TCHAR];
+	DWORD numStocks;
+	float value;
+} TRANSACTION;
+
 enum THREAD_CODE {
 	SUCESS,
 	STOP,

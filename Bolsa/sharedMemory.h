@@ -3,6 +3,7 @@
 #define SHARED_MEMORY_H
 
 #include "bolsa.h"
+#include <Windows.h>
 #include "SO2_SharedMemory.h"
 
 namespace SharedMemory {
