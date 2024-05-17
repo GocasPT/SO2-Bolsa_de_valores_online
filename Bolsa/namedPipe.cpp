@@ -2,6 +2,7 @@
 #include "userManager.h"
 #include "companyManager.h"
 #include "stockWalletManager.h"
+#include "sharedMemory.h"
 #include <sstream>
 
 PIPE_INST NamedPipe::newNamedPipe() {
@@ -80,8 +81,8 @@ void NamedPipe::config(BOLSA& servidor) {
 	}
 
 	/*---THREAD PARA RECEBER CLIENTES---*/
-	servidor.hReciverThread = CreateThread(NULL, 0, reciverRoutine, &servidor, 0, NULL);
-	if (servidor.hReciverThread == NULL) {
+	servidor.hReceiverThread = CreateThread(NULL, 0, receiverRoutine, &servidor, 0, NULL);
+	if (servidor.hReceiverThread == NULL) {
 		std::stringstream ss;
 		ss << "Erro ao criar a thread para receber clientes (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
@@ -181,7 +182,7 @@ DWORD WINAPI NamedPipe::dataRoutine(LPVOID lpParam) {
 	return 0;
 }
 
-DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
+DWORD WINAPI NamedPipe::receiverRoutine(LPVOID lpParam) {
 	BOLSA* data = (BOLSA*)lpParam;
 	USER loginUser;
 	BOOL ret;
@@ -296,6 +297,8 @@ DWORD WINAPI NamedPipe::notifyRoutine(LPVOID lpParam) {
 
 		_tcscpy_s(msg.data, ss.str().c_str());
 		sendAll(data->userList, msg);
+
+		SharedMemory::update(*data);
 
 		std::_tcout << TAG_INPUT;
 	}
@@ -585,8 +588,8 @@ void NamedPipe::close(BOLSA& servidor) {
 
 	CancelIoEx(servidor.hPipeInst.hPipe, &servidor.hPipeInst.oOverlap);
 	
-	WaitForSingleObject(servidor.hReciverThread, INFINITE);
-	CloseHandle(servidor.hReciverThread);
+	WaitForSingleObject(servidor.hReceiverThread, INFINITE);
+	CloseHandle(servidor.hReceiverThread);
 	CloseHandle(servidor.hPipeInst.hPipe);
 	CloseHandle(servidor.hPipeInst.hEvent);
 

@@ -28,6 +28,7 @@ typedef struct USER : USER_DATA {
 typedef struct {
 	COMPANY* company;				// Ponteiro para a empresa com última alteração
 	float oldPrice;					// Preço antigo (preço atual já alterado)
+	USER_DATA user;
 } NOTIFY_DATA;
 
 typedef std::vector<USER> USER_LIST;
@@ -88,8 +89,8 @@ typedef struct {
 	SHARED_MEMORY* sharedMemory;
 
 	/*---NAMED PIPE---*/
-	PIPE_INST hPipeInst;			// Current reciver pipe
-	HANDLE hReciverThread;			// Reciver thread
+	PIPE_INST hPipeInst;			// Current receiver pipe
+	HANDLE hReceiverThread;			// Receiver thread
 
 	/*---NOTIFY---*/
 	HANDLE hNotifyThread;			// Notify thread
@@ -101,6 +102,8 @@ typedef struct {
 	USER_QUEUE hUsersQueue;			// Queue of clients waiting to connect
 	TDATA_LIST tDataList;			// Data for each thread
 	CRITICAL_SECTION cs;			// Critical section for shared data
+
+
 } BOLSA;
 
 #endif // !BOLSA_H

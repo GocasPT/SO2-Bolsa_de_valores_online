@@ -34,8 +34,6 @@ bool compareStockPrice(const COMPANY& c1, const COMPANY& c2) {
 }
 
 void SharedMemory::update(BOLSA &servidor) {
-	ResetEvent(servidor.hEvent);
-
 	ZeroMemory(servidor.sharedMemory->companies, sizeof(COMPANY) * MAX_COMPANIES);
 	sort(servidor.companyList.begin(), servidor.companyList.end(), compareStockPrice);
 	std::copy(servidor.companyList.begin(), servidor.companyList.end(), servidor.sharedMemory->companies);
@@ -44,6 +42,7 @@ void SharedMemory::update(BOLSA &servidor) {
 
 	// TODO acrescentar última transação: servidor.data->lastTransaction = servidor.lastTransaction;
 
+	servidor.sharedMemory->boardsRead = 0;
 	SetEvent(servidor.hEvent);
 }
 

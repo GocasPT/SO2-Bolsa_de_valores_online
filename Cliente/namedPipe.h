@@ -7,7 +7,7 @@
 
 namespace NamedPipe {
 	void connectToServer(CLIENTE& user);
-	DWORD WINAPI reciverMessage(LPVOID lpParam);
+	DWORD WINAPI receiverMessage(LPVOID lpParam);
 	void send(CLIENTE& user, MESSAGE msg);
 	void requestLogin(CLIENTE& user, std::TSTRING name, std::TSTRING password);
 	void requestList(CLIENTE& user);

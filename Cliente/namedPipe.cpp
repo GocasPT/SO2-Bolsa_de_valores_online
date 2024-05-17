@@ -51,7 +51,7 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 	}
 	std::_tcout << _T(" Conectado ao servidor") << std::endl;
 
-	user.hThread = CreateThread(NULL, 0, reciverMessage, &user, 0, NULL);
+	user.hThread = CreateThread(NULL, 0, receiverMessage, &user, 0, NULL);
 	if (user.hThread == NULL) {
 		std::stringstream ss;
 		ss << "Erro ao criar a thread (" << GetLastError() << ")";
@@ -70,7 +70,7 @@ void NamedPipe::connectToServer(CLIENTE& user) {
  * \return -1 - Erro ao ler a mensagem
  * \return 3 - O servidor encerrou
  */
-DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
+DWORD WINAPI NamedPipe::receiverMessage(LPVOID lpParam) {
 	CLIENTE* user = (CLIENTE*)lpParam;
 	MESSAGE msg;
 	BOOL ret;
@@ -80,7 +80,7 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 
 	//TODO: msg with trash
 
-	while (user->runnig) {
+	while (user->running) {
 		ret = ReadFile(user->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user->hPipeInst.oOverlap);
 		while (!ret) {
 			switch (GetLastError()) {
@@ -92,7 +92,7 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 				case ERROR_BROKEN_PIPE:
 				case ERROR_PIPE_NOT_CONNECTED:
 					std::_tcout << std::endl << TAG_ERROR << TEXT("O servidor encerrou. Pressione 'Enter' para sair do programa...") << std::endl;
-					user->runnig = false;
+					user->running = false;
 					user->logged = false;
 					return THREAD_CODE::STOP;
 

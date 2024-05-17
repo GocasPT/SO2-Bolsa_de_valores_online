@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <io.h>
 
-bool checkServerIsRunnig() {
+bool checkServerIsRunning() {
 	HANDLE hPipeTest = CreateNamedPipe(PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, PIPE_TIMEOUT, NULL);
 	if (GetLastError() == ERROR_ALREADY_EXISTS) {
 		CloseHandle(hPipeTest);
@@ -24,7 +24,7 @@ void configServer(CLIENTE& user) {
 		exit(-1);
 	}
 
-	user.runnig = true;
+	user.running = true;
 	user.logged = false;
 	user.inQueue = false;
 }
@@ -37,7 +37,7 @@ int _tmain(int argc, std::TSTRING argv[]) {
 	_setmode(_fileno(stdout), _O_WTEXT);
 #endif 
 
-	if (!checkServerIsRunnig()) {
+	if (!checkServerIsRunning()) {
 		std::_tcout << TAG_ERROR << TEXT("O servidor não está a correr") << std::endl;
 		exit(-1);
 	}

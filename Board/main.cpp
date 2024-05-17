@@ -10,6 +10,7 @@ void printCompany(COMPANY c) {
 }
 
 void printBoard(BOARD board) {
+	system("cls");
 	std::_tcout << "Name\nNumber of Free Stocks\nPrice Per Stock" << std::endl;
 	for (DWORD i = 0; i < board.N; i++) {
 		printCompany(board.data.companies[i]);

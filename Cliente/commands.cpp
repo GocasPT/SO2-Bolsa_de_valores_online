@@ -32,7 +32,7 @@ void cmd::consoleRoutine(CLIENTE& user) {
 		}
 
 		WaitForSingleObject(user.hEventConsole, INFINITE);
-	} while (input.compare(CMD_EXIT) != 0 && user.runnig);
+	} while (input.compare(CMD_EXIT) != 0 && user.running);
 }
 
 /**
@@ -91,7 +91,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 		}
 
 		SetEvent(userData.hEventConsole);
-		userData.runnig = false;
+		userData.running = false;
 		valid = true;
 	}
 

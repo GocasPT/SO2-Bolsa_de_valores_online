@@ -17,7 +17,7 @@ typedef struct {
 } PIPE_INST;
 
 typedef struct {
-	bool runnig;
+	bool running;
 	bool logged;
 	bool inQueue;
 	TCHAR name[MAX_TCHAR];
