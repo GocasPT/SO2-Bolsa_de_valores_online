@@ -29,10 +29,15 @@ void SharedMemory::config(BOLSA& servidor) {
 	std::_tcout << TAG_NORMAL << _T("Configuração da memória partillhada concluída, disponível para a conexão das board(GUI)s") << std::endl << std::endl;
 }
 
+bool compareStockPrice(const COMPANY& c1, const COMPANY& c2) {
+	return c1.pricePerStock >= c2.pricePerStock;
+}
+
 void SharedMemory::update(BOLSA &servidor) {
 	ResetEvent(servidor.hEvent);
 
 	ZeroMemory(servidor.sharedMemory->companies, sizeof(COMPANY) * MAX_COMPANIES);
+	sort(servidor.companyList.begin(), servidor.companyList.end(), compareStockPrice);
 	std::copy(servidor.companyList.begin(), servidor.companyList.end(), servidor.sharedMemory->companies);
 
 	servidor.sharedMemory->numCompanies = servidor.companyList.size();

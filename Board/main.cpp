@@ -11,7 +11,7 @@ void printCompany(COMPANY c) {
 
 void printBoard(BOARD board) {
 	std::_tcout << "Name\nNumber of Free Stocks\nPrice Per Stock" << std::endl;
-	for (DWORD i = 0; i < board.data.numCompanies; i++) {
+	for (DWORD i = 0; i < board.N; i++) {
 		printCompany(board.data.companies[i]);
 	}
 }
@@ -26,6 +26,14 @@ int _tmain(int argc, std::TSTRING argv[]) {
 	_setmode(_fileno(stdin), _O_WTEXT);
 	_setmode(_fileno(stdout), _O_WTEXT);
 #endif 
+
+	if (argc == 1) {
+		std::_tcout << _T("A usar 5 como o valor default de empresas a apresentar") << std::endl;
+		board.N = 5;
+	} else if ((board.N = stoi(argv[1])) == -1) {
+		std::_tcout << TAG_ERROR << _T("Erro a dar parse ao argumento do número N") << std::endl;
+		return 0;
+	}
 
 	SharedMemory::connect(board);
 

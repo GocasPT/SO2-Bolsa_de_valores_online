@@ -15,6 +15,7 @@ typedef struct {
 	/* GENERAL */
 	bool isRunning;
 	bool isPaused;
+	DWORD N;
 
 	/* SHARED MEMORY */
 	HANDLE hSharedMemory; // Handle shared memory

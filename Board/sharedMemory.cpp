@@ -14,6 +14,12 @@ void SharedMemory::connect(BOARD& board) {
         return;
     }
 
+    if (board.sharedMemory->numBoards == 10) {
+        std::_tcout << _T("Já existem 10 boards abertas, tenta novamente mais tarde\nA terminar o programa...\n");
+        close(board);
+        exit(0);
+    }
+
     board.hEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, EVENT_NAME);
     if (board.hEvent == NULL) {
         std::_tcout << _T("[ERRO] Falha na abertura do evento para acesso à memória partilhada: ") << GetLastError() << std::endl;
