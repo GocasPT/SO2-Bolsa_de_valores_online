@@ -5,7 +5,7 @@
 #include "bolsa.h"
 
 #define CMD_HELP _T("help")
-#define CMD_DATA _T("sd")
+#define CMD_DATA _T("showd")
 #define CMD_ADDC _T("addc")
 #define CMD_LISTC _T("listc")
 #define CMD_STOCK _T("stock")

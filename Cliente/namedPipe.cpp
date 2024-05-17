@@ -66,6 +66,8 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 
 	std::_tcout << _T("A espera de autenticação... ");
 
+	//TODO: msg with trash
+
 	while (user->runnig) {
 		ret = ReadFile(user->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user->hPipeInst.oOverlap);
 		while (!ret) {
@@ -116,7 +118,6 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 			//TODO: recevie free_slot message (its connected and talking with)
 
 			case CODE_LISTC_ITEM:
-				//TODO: Show item from list companies (table mode)
 				std::_tcout << msg.data << std::endl;
 
 				if (_tcscmp(msg.data, _T("\0")) != 0)

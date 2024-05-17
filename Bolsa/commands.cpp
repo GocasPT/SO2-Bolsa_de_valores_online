@@ -70,7 +70,7 @@ bool cmd::validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args) {
 				std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") << CMD_ADDC << _T(" <nome-empresa> <número-ações> <preço-ação>") << std::endl << std::endl;
 
 			else
-				CompanyManager::addCompany(servidor, args[1], std::stoi(args[2]), std::stoi(args[3]));
+				CompanyManager::addCompany(servidor, args[1], std::stoi(args[2]), std::stof(args[3]));
 
 			return true;
 		}
@@ -98,7 +98,7 @@ bool cmd::validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args) {
 				std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") << CMD_STOCK << _T(" <nome-empresa> <preço-ação>") << std::endl << std::endl;
 
 			else
-				CompanyManager::updateStock(servidor, args[1], std::stoi(args[2]));
+				CompanyManager::updateStock(servidor, args[1], std::stof(args[2]));
 
 			return true;
 		}
@@ -151,7 +151,7 @@ bool cmd::validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args) {
 }
 
 void cmd::showData(BOLSA& servidor) {
-	std::_tcout << _T("Threads de clientes") << std::endl;
+	std::_tcout << _T("Threads de clientes (") << servidor.tDataList.size() << _T(")") << std::endl;
 
 	if (servidor.tDataList.empty()) {
 		std::_tcout << _T("Não existem threads de clientes a correr") << std::endl;
@@ -162,4 +162,5 @@ void cmd::showData(BOLSA& servidor) {
 		}
 	}
 
+	std::_tcout << std::endl << _T("Thread timer ") << ( servidor.isPaused ? _T("ativada") : _T("em espera") ) << std::endl;
 }

@@ -5,10 +5,11 @@
 void CompanyManager::config(BOLSA& servidor) {
 	servidor.timerData.isRunning = &servidor.isRunning;
 	servidor.timerData.isPaused = &servidor.isPaused;
-	servidor.timerData.time = 0;
 
-	servidor.timerData.hSHEvent = CreateEvent(NULL, FALSE, FALSE, EVENT_TIMER);
-	if (servidor.timerData.hSHEvent == NULL) {
+	/*---THREAD TIMER---*/
+	servidor.timerData.time = 0;
+	servidor.timerData.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	if (servidor.timerData.hEvent == NULL) {
 		std::stringstream ss;
 		ss << "Erro ao criar o evento para o timer (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
@@ -25,7 +26,7 @@ void CompanyManager::config(BOLSA& servidor) {
 	std::_tcout << TAG_NORMAL << _T("Configuração do timer concluida") << std::endl;
 }
 
-void CompanyManager::addCompany(BOLSA& servidor, std::TSTRING name, DWORD numOfStock, DWORD pricePerStock) {
+void CompanyManager::addCompany(BOLSA& servidor, std::TSTRING name, DWORD numOfStock, float pricePerStock) {
 	if (getCompany(servidor.companyList, name) != nullptr) {
 		std::_tcout << TAG_WARNING << _T("Empresa já existe") << std::endl;
 		return;
@@ -39,6 +40,8 @@ void CompanyManager::addCompany(BOLSA& servidor, std::TSTRING name, DWORD numOfS
 	servidor.companyList.push_back(company);
 
 	std::_tcout << TAG_NORMAL << _T("Empresa adicionada com sucesso") << std::endl << _T("Nome: ") << name << _T(" | Nº de Ações: ") << company.numFreeStocks << _T(" | Preço por Ação: ") << company.pricePerStock << std::endl << std::endl;
+
+	//TODO: SetEvent(servidor.hConsolaEvent);
 }
 
 void CompanyManager::listCompanies(BOLSA& servidor) {
@@ -53,6 +56,7 @@ void CompanyManager::listCompanies(BOLSA& servidor) {
 		std::_tcout << _T("Nome: ") << it->name << _T(" | Nº de Ações: ") << it->numFreeStocks << _T(" | Preço por Ação: ") << it->pricePerStock << std::endl;
 
 	std::_tcout << std::endl;
+	//TODO: SetEvent(servidor.hConsolaEvent);
 }
 
 COMPANY* CompanyManager::getCompany(COMPANY_LIST& companyList, std::TSTRING name) {
@@ -65,7 +69,7 @@ COMPANY* CompanyManager::getCompany(COMPANY_LIST& companyList, std::TSTRING name
 	return &(*it);
 }
 
-void CompanyManager::updateStock(BOLSA& servidor, std::TSTRING name, DWORD pricePerStock) {
+void CompanyManager::updateStock(BOLSA& servidor, std::TSTRING name, float pricePerStock) {
 	COMPANY* company = getCompany(servidor.companyList, name);
 	if (company == nullptr) {
 		std::_tcout << TAG_WARNING << _T("Empresa não encontrada") << std::endl;
@@ -78,10 +82,13 @@ void CompanyManager::updateStock(BOLSA& servidor, std::TSTRING name, DWORD price
 	//TODO: show dif in price (old to new OR variation percentage)
 	std::_tcout << TAG_NORMAL << _T("Preço das ações atualizado com sucesso") << std::endl << _T("Nome: ") << name << _T(" | Preço por Ação: ") << company->pricePerStock << std::endl << std::endl;
 
-	//TODO: notify users (set event to send message)
-	//TODO: mutex OR cs
+	//TODO: SetEvent(servidor.hConsolaEvent);
+
+	EnterCriticalSection(&servidor.cs);
 	servidor.notifyData = { company, oldPrice };
+	LeaveCriticalSection(&servidor.cs);
 	SetEvent(servidor.hNotifyEvent);
+	//TODO: triger SM
 }
 
 void CompanyManager::updateStock(NOTIFY_DATA& notifyData, COMPANY& company, OPERATION opType) {
@@ -101,10 +108,12 @@ void CompanyManager::updateStock(NOTIFY_DATA& notifyData, COMPANY& company, OPER
 	//TODO: show dif in price (old to new OR variation percentage)
 	std::_tcout << TAG_NORMAL << _T("Preço das ações atualizado com sucesso") << std::endl << _T("Nome: ") << company.name << _T(" | Preço por Ação: ") << company.pricePerStock << std::endl << std::endl;
 
-	//TODO: notify users (set event to send message)
-	//TODO: mutex OR cs
+	//TODO: SetEvent(servidor.hConsolaEvent);
+
+	//EnterCriticalSection(&cs);
 	notifyData.company = &company;
 	notifyData.oldPrice = oldPrice;
+	//LeaveCriticalSection(&cs);
 
 	HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, EVENT_NOTIFY);
 	if (hEvent == NULL) {
@@ -114,47 +123,56 @@ void CompanyManager::updateStock(NOTIFY_DATA& notifyData, COMPANY& company, OPER
 	}
 
 	SetEvent(hEvent);
+	//TODO: triger SM
 }
 
 void CompanyManager::pauseCompaniesOps(BOLSA& servidor, int time) {
+	EnterCriticalSection(&servidor.cs);
 	servidor.timerData.time = time;
-	SetEvent(servidor.timerData.hSHEvent);
+	LeaveCriticalSection(&servidor.cs);
+	SetEvent(servidor.timerData.hEvent);
 }
 
 DWORD WINAPI CompanyManager::timerRoutine(LPVOID lpParam) {
 	TIMER_DATA* data = (TIMER_DATA*)lpParam;
+	/*TODO: HANDLE hEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, EVENT_CONSOLE);
+	if (hEvent == NULL) {
+		std::stringstream ss;
+		ss << "Erro ao abrir o evento para a consola (" << GetLastError() << ")";
+		return THREAD_CODE::ERRO;
+	}*/
 
 	std::_tcout << std::endl << _T("Thread do timer iniciada") << std::endl;
 
 	while (*(data->isRunning)) {
-		WaitForSingleObject(data->hSHEvent, INFINITE);
+		WaitForSingleObject(data->hEvent, INFINITE);
 
 		if (!*(data->isRunning))
 			break;
 
 		*(data->isPaused) = true;
 		std::_tcout << std::endl << _T("Pausa das operações de compra e venda de ações por ") << data->time << _T(" segundos...") << std::endl;
-		//TODO: unlock console here
+		//TODO: SetEvent(hConsolaEvent);
 
 		Sleep(1000 * data->time);
 
 		*(data->isPaused) = false;
-		std::_tcout << std::endl << _T("Operações de compra e venda de ações retornadas") << std::endl;
+		std::_tcout << std::endl << _T("Operações de compra e venda de ações retornadas") << std::endl << TAG_INPUT;
 	}
 
 	std::_tcout << _T("A encerrar a thread do timer...") << std::endl;
 
-	return 0;
+	return THREAD_CODE::SUCESS;
 }
 
 
 void CompanyManager::close(BOLSA& servidor) {
 	std::_tcout << _T("A fechar a thread e recursos do timer...") << std::endl;
 
-	SetEvent(servidor.timerData.hSHEvent);
+	SetEvent(servidor.timerData.hEvent);
 	WaitForSingleObject(servidor.hTimerThread, INFINITE);
 	CloseHandle(servidor.hTimerThread);
-	CloseHandle(servidor.timerData.hSHEvent);
+	CloseHandle(servidor.timerData.hEvent);
 
 	std::_tcout << TAG_NORMAL << _T("Thread e recursos do timer fechado com sucesso") << std::endl << std::endl;
 }

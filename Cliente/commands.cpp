@@ -46,13 +46,11 @@ void cmd::consoleRoutine(CLIENTE& user) {
 bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	bool valid = false;
 
-	//TODO: add std::stoi
-
 	if (!args[0].compare(CMD_HELP)) {
 		//TODO: help command
 		std::_tcout << TAG_WARNING << _T("Comando de ajuda não implementado") << std::endl;
 
-		SetEvent(userData.hEventConsole); //TODO: throw in erro [?]
+		SetEvent(userData.hEventConsole);
 
 		valid = true;
 	}
@@ -64,12 +62,12 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	else if (!args[0].compare(CMD_LOGIN)) {
 		if (args.size() != 3) {
 			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") << CMD_LOGIN << _T(" <username> <password>") << std::endl << std::endl;
-			SetEvent(userData.hEventConsole); //TODO: throw in erro [?]
+			SetEvent(userData.hEventConsole);
 		}
 
 		else if (userData.logged) {
 			std::_tcout << TAG_WARNING << _T("Já autenticates como ") << userData.name << _T(". Para torcar de utilizar, sair do programa com '") << CMD_EXIT << _T("'") << std::endl;
-			SetEvent(userData.hEventConsole); //TODO: throw in erro [?]
+			SetEvent(userData.hEventConsole);
 		}
 
 		else
@@ -85,10 +83,8 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	else if (!args[0].compare(CMD_EXIT)) {
 		if (args.size() != 1) {
 			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") << CMD_EXIT << std::endl << std::endl;
-			SetEvent(userData.hEventConsole); //TODO: throw in erro [?]
+			SetEvent(userData.hEventConsole);
 		}
-
-		//NamedPipe::send(userData, { CODE_EXIT, _T('\0') });
 
 		SetEvent(userData.hEventConsole);
 		userData.runnig = false;
@@ -108,7 +104,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	else if (!args[0].compare(CMD_LISTC)) {
 		if (args.size() != 1) {
 			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") << CMD_LISTC << std::endl << std::endl;
-			SetEvent(userData.hEventConsole); //TODO: throw in erro [?]
+			SetEvent(userData.hEventConsole);
 		}
 
 		else
@@ -124,7 +120,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	else if (!args[0].compare(CMD_BUY)) {
 		if (args.size() != 3) {
 			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") << CMD_BUY << _T(" <nome-empresa> <número-ações>") << std::endl << std::endl;
-			SetEvent(userData.hEventConsole); //TODO: throw in erro [?]
+			SetEvent(userData.hEventConsole);
 		}
 
 		else
@@ -140,7 +136,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	else if (!args[0].compare(CMD_SELL)) {
 		if (args.size() != 3) {
 			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") << CMD_SELL << _T(" <nome-empresa> <número-ações>") << std::endl << std::endl;
-			SetEvent(userData.hEventConsole); //TODO: throw in erro [?]
+			SetEvent(userData.hEventConsole);
 		}
 
 		else
@@ -156,7 +152,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	else if (!args[0].compare(CMD_BALANCE)) {
 		if (args.size() != 1) {
 			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") << CMD_BALANCE << std::endl << std::endl;
-			SetEvent(userData.hEventConsole); //TODO: throw in erro [?]
+			SetEvent(userData.hEventConsole);
 		}
 
 		else

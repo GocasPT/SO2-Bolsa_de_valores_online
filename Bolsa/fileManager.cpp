@@ -68,11 +68,6 @@ void Files::read_files(BOLSA& servidor) {
 void Files::write_files(BOLSA& servidor) {
 	std::_tcout << _T("A salvar dados no ficheiros... (0/") << TOTAL_FILES - 1 << _T(")") << std::endl;
 
-	/*TODO:
-	  - get data from servidor.companies and write in FILE_COMPANIES
-	  - maybe more files to write/save
-	*/
-
 	std::_tofstream file;
 
 	file.open(FILE_USERS, std::ios::out | std::ios::trunc);
