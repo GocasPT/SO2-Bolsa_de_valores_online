@@ -32,6 +32,8 @@
 #define TAG_ERROR _T("[ERRO] ")
 #define TAG_WARNING _T("[WARNING] ")
 
+#define EXIT_EVENT_NAME _T("ExitEvent")
+
 typedef struct {
 	TCHAR companyName[MAX_TCHAR];
 	DWORD numStocks;

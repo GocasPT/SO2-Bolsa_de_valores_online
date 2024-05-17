@@ -90,7 +90,7 @@ typedef struct {
 
 	/*---NAMED PIPE---*/
 	PIPE_INST hPipeInst;			// Current receiver pipe
-	HANDLE hReceiverThread;			// Receiver thread
+	HANDLE hRecieverThread;			// Receiver thread
 
 	/*---NOTIFY---*/
 	HANDLE hNotifyThread;			// Notify thread
@@ -103,7 +103,7 @@ typedef struct {
 	TDATA_LIST tDataList;			// Data for each thread
 	CRITICAL_SECTION cs;			// Critical section for shared data
 
-
+	HANDLE hExitEvent;
 } BOLSA;
 
 #endif // !BOLSA_H

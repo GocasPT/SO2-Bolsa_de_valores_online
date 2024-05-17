@@ -32,18 +32,27 @@ void SharedMemory::connect(BOARD& board) {
     std::_tcout << _T("Configuração da memória partillhada concluída") << std::endl << std::endl;
 }
 
-void SharedMemory::read(BOARD& board) {
-    WaitForSingleObject(board.hEvent, INFINITE);
-	CopyMemory(&board.data, board.sharedMemory, sizeof(SHARED_MEMORY));
-    //TODO: recebe a lista depois faz um 'crop' para o tamanho certo (recebe tudo, depois mostrar/guarda na memória a parte que quer)
+bool SharedMemory::read(BOARD& board) {
+    HANDLE events[2]{};
+    events[0] = board.hEvent;
+    events[1] = board.hExitEvent;
 
-    board.sharedMemory->boardsRead++;
+    if (WaitForMultipleObjects(2, events, FALSE, INFINITE) == WAIT_OBJECT_0) {
+        CopyMemory(&board.data, board.sharedMemory, sizeof(SHARED_MEMORY));
+        //TODO: recebe a lista depois faz um 'crop' para o tamanho certo (recebe tudo, depois mostrar/guarda na memória a parte que quer)
 
-    std::_tcout << _T("Boards Connected: ") << board.sharedMemory->numBoards << std::endl;
-    std::_tcout << _T("Boards Read: ") << board.sharedMemory->boardsRead << std::endl;
+        board.sharedMemory->boardsRead++;
 
-    if (board.sharedMemory->boardsRead == board.sharedMemory->numBoards) {
-        ResetEvent(board.hEvent);
+        std::_tcout << _T("Boards Connected: ") << board.sharedMemory->numBoards << std::endl;
+        std::_tcout << _T("Boards Read: ") << board.sharedMemory->boardsRead << std::endl;
+
+        if (board.sharedMemory->boardsRead == board.sharedMemory->numBoards) {
+            ResetEvent(board.hEvent);
+        }
+        return true;
+    } else {
+        close(board);
+        return false;
     }
 }
 

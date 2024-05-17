@@ -33,7 +33,13 @@ int _tmain(int argc, std::TSTRING argv[]) {
 		board.N = 5;
 	} else if ((board.N = stoi(argv[1])) == -1) {
 		std::_tcout << TAG_ERROR << _T("Erro a dar parse ao argumento do número N") << std::endl;
-		return 0;
+		return 1;
+	}
+
+	board.hExitEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, EXIT_EVENT_NAME);
+	if (board.hEvent == NULL) {
+		std::_tcout << _T("[ERRO] Falha na abertura do evento de exit: ") << GetLastError() << std::endl;
+		return 1;
 	}
 
 	SharedMemory::connect(board);
@@ -51,7 +57,9 @@ int _tmain(int argc, std::TSTRING argv[]) {
 	}
 
 	while (board.isRunning){
-		SharedMemory::read(board);
+		if (SharedMemory::read(board)) {
+			board.isRunning = false;
+		}
 		printBoard(board);
 		std::_tcout << std::endl << std::endl;
 	}

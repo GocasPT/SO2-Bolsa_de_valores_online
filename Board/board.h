@@ -24,6 +24,8 @@ typedef struct {
 
 	HANDLE hConsoleThread;
 
+	HANDLE hExitEvent;
+
 	SHARED_MEMORY data;
 } BOARD;
 

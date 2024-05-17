@@ -80,7 +80,7 @@ DWORD WINAPI NamedPipe::receiverMessage(LPVOID lpParam) {
 
 	//TODO: msg with trash
 
-	while (user->running) {
+	while (user->runnig) {
 		ret = ReadFile(user->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user->hPipeInst.oOverlap);
 		while (!ret) {
 			switch (GetLastError()) {
@@ -92,7 +92,7 @@ DWORD WINAPI NamedPipe::receiverMessage(LPVOID lpParam) {
 				case ERROR_BROKEN_PIPE:
 				case ERROR_PIPE_NOT_CONNECTED:
 					std::_tcout << std::endl << TAG_ERROR << TEXT("O servidor encerrou. Pressione 'Enter' para sair do programa...") << std::endl;
-					user->running = false;
+					user->runnig = false;
 					user->logged = false;
 					return THREAD_CODE::STOP;
 
