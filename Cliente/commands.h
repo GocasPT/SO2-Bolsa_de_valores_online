@@ -14,6 +14,7 @@
 #define CMD_EXIT _T("exit")
 
 namespace cmd {
+	void config(CLIENTE& user);
 	void consoleRoutine(CLIENTE &user);
 	bool validateCommand(CLIENTE &userData, std::vector<std::TSTRING> args);
 }

@@ -11,11 +11,14 @@
 #define TAG_NORMAL _T("(BOLSA) ")
 
 #define EVENT_CONSOLE _T("ServerConsole")
-#define EVENT_TIMER _T("ServerTimer")
+#define EVENT_DATA _T("ServerData")
 
 typedef struct {
-	OVERLAPPED oOverlap;
-	HANDLE hPipe, hEvent;
+	OVERLAPPED oOverlap;			// Overlapped structure for async I/O
+	OVERLAPPED oOverlapExtra;		// Overlapped structure for extra async I/O
+	HANDLE hPipe;					// Handle of the pipe
+	HANDLE hEvent;			// Event handle
+	HANDLE hEventExtra;			// Extra event handle
 } PIPE_INST;
 
 typedef struct USER : USER_DATA {
@@ -23,8 +26,8 @@ typedef struct USER : USER_DATA {
 } USER;
 
 typedef struct {
-	COMPANY* company;
-	float oldPrice;
+	COMPANY* company;				// Ponteiro para a empresa com última alteração
+	float oldPrice;					// Preço antigo (preço atual já alterado)
 } NOTIFY_DATA;
 
 typedef std::vector<USER> USER_LIST;
@@ -34,21 +37,29 @@ typedef std::vector<HANDLE> HANDLE_LIST;
 typedef std::vector<PIPE_INST> PIPE_INST_LIST;
 
 typedef struct {
-	bool& isRunning;
-	bool& isPaused;
-	USER_LIST& userList;
-	USER_QUEUE& userQueue;
-	COMPANY_LIST& companyList;
-	NOTIFY_DATA& notifyData;
-	USER* myUser;
-	CRITICAL_SECTION& cs;
+	/*--REFERENCIAS DO ERVIDOR---*/
+	bool& isRunning;				// Referencia para o estado do servidor
+	bool& isPaused;					// Referencia para o estado do servidor
+	NOTIFY_DATA& notifyData;		// Referencia para os dados de notificação
+
+	/*---LISTAS DO SERVIDOR---*/
+	USER_LIST& userList;			// Lista de utilizadores
+	USER_QUEUE& userQueue;			// Fila de utilizadores
+	COMPANY_LIST& companyList;		// Lista de empresas
+
+	/*---DADOS DA THREAD---*/
+	DWORD tID;						// Thread ID
+	USER* myUser; 					// Utilizador associado à thread
+
+	/*---CRITICAL SECTION---*/
+	CRITICAL_SECTION& cs;			// Critical section
 } TDATA;
 
 typedef struct {
-	bool* isRunning;
-	bool* isPaused;
-	int time;
-	HANDLE hSHEvent;
+	bool* isRunning;				// Referencia para o estado do servidor
+	bool* isPaused;					// Referencia para o estado do servidor
+	int time;						// Tempo do timer
+	HANDLE hEvent;					// Evento para o timer
 } TIMER_DATA;
 
 typedef std::list<TDATA> TDATA_LIST;

@@ -54,7 +54,9 @@ USER* UserManager::removeUser(USER_LIST& userList, USER_QUEUE& userQueue, USER* 
 				[user](USER userItem) { return _tcscmp(userItem.name, user->name) == 0; });
 
 	if (it == userList.end()) {
-		throw std::runtime_error("Cliente não encontrado"); //TODO: improve exception
+		std::stringstream ss;
+		ss << "Cliente " << user->name << " nao encontrado";
+		throw std::runtime_error(ss.str());
 	}
 
 	it->connected = false;
@@ -64,8 +66,6 @@ USER* UserManager::removeUser(USER_LIST& userList, USER_QUEUE& userQueue, USER* 
 		return nullptr;
 
 	user = userQueue.front();
-	user->connected = true;
-	user->inQueue = false;
 	userQueue.pop();
 
 	return user;
@@ -108,8 +108,11 @@ USER& UserManager::getUser(USER_LIST& userList, std::TSTRING userName) {
 	auto it = std::find_if(userList.begin(), userList.end(),
 		[userName](USER user) { return userName.compare(user.name) == 0; });
 	
-	if (it == userList.end())
-		throw std::runtime_error("User not found"); //TODO: improve exception
+	if (it == userList.end()) {
+		std::stringstream ss;
+		ss << "Cliente " << userName.c_str() << " nao encontrado";
+		throw std::runtime_error(ss.str());
+	}
 	else
 		return *it;
 }

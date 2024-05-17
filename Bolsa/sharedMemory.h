@@ -7,7 +7,6 @@
 #include "SO2_SharedMemory.h"
 
 namespace SharedMemory {
-	//TODO: functions for shared memory (server-side)
 	void config(BOLSA &servidor);
 	void update(BOLSA & servidor);
 	void close(BOLSA& servidor);

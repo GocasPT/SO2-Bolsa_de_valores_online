@@ -11,6 +11,7 @@ enum MESSAGE_CODE {
 	CODE_LOGIN,
 	CODE_DENID,
 	CODE_FULL,
+	CODE_FREE_SLOT,
 	CODE_LISTC,
 	CODE_LISTC_ITEM,
 	CODE_BUY,
@@ -21,9 +22,9 @@ enum MESSAGE_CODE {
 	CODE_NOTIFY
 };
 
-typedef struct {
+typedef struct message {
 	DWORD code;
-	TCHAR data[MAX_TCHAR];
+	TCHAR data[MAX_TCHAR] = _T("\0");
 } MESSAGE;
 
 #endif // !SO2_NAMED_PIPE_H

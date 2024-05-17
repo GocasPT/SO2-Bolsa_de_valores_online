@@ -28,6 +28,7 @@
 #define MAX_TCHAR 256
 #define MAX_STOCKS 10
 
+#define TAG_INPUT _T(">> ")
 #define TAG_ERROR _T("[ERRO] ")
 #define TAG_WARNING _T("[WARNING] ")
 
@@ -58,5 +59,11 @@ typedef struct {
 	DWORD numStocks;
 	float value;
 } TRANSACTION;
+
+enum THREAD_CODE {
+	SUCESS,
+	STOP,
+	ERRO,
+};
 
 #endif // !SO2_UTILS_H
