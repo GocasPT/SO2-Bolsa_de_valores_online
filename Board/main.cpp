@@ -4,9 +4,21 @@
 #include <fcntl.h>
 #include <io.h>
 #include <iostream>
+#include "board.h"
 
 void printCompany(COMPANY c) {
 	std::_tcout << c.name << "\t" << c.numFreeStocks << "\t" << c.pricePerStock << std::endl;
+}
+
+void printTransaction(TRANSACTION t) {
+	std::_tcout << t.username;
+	if (t.buy) {
+		std::_tcout << _T(" comprou ");
+	}
+	else {
+		std::_tcout << _T(" vendeu ");
+	}
+	std::_tcout << t.numStocks << " stocks da empresa " << t.companyName << std::endl;
 }
 
 void printBoard(BOARD board) {
@@ -14,6 +26,10 @@ void printBoard(BOARD board) {
 	std::_tcout << "Name\nNumber of Free Stocks\nPrice Per Stock" << std::endl;
 	for (DWORD i = 0; i < board.N; i++) {
 		printCompany(board.data.companies[i]);
+	}
+
+	if (board.data.lastTransaction.numStocks != 0) {
+		printTransaction(board.data.lastTransaction);
 	}
 }
 
@@ -37,7 +53,7 @@ int _tmain(int argc, std::TSTRING argv[]) {
 	}
 
 	board.hExitEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, EXIT_EVENT_NAME);
-	if (board.hEvent == NULL) {
+	if (board.hExitEvent == NULL) {
 		std::_tcout << _T("[ERRO] Falha na abertura do evento de exit: ") << GetLastError() << std::endl;
 		return 1;
 	}
@@ -57,7 +73,7 @@ int _tmain(int argc, std::TSTRING argv[]) {
 	}
 
 	while (board.isRunning){
-		if (SharedMemory::read(board)) {
+		if (!SharedMemory::read(board)) {
 			board.isRunning = false;
 		}
 		printBoard(board);

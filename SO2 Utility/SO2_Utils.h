@@ -59,7 +59,8 @@ typedef struct {
 typedef struct {
 	TCHAR companyName[MAX_TCHAR];
 	DWORD numStocks;
-	float value;
+	TCHAR username[MAX_TCHAR];
+	bool buy;
 } TRANSACTION;
 
 enum THREAD_CODE {

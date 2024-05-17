@@ -4,6 +4,7 @@
 #include "commands.h"
 #include "fileManager.h"
 #include "companyManager.h"
+#include "bolsa.h"
 #include <fcntl.h>
 #include <io.h>
 

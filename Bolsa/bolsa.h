@@ -41,6 +41,7 @@ typedef struct {
 	/*--REFERENCIAS DO ERVIDOR---*/
 	bool& isRunning;				// Referencia para o estado do servidor
 	bool& isPaused;					// Referencia para o estado do servidor
+	SHARED_MEMORY& sharedMemory;		// Referencia para a memória partilhada
 	NOTIFY_DATA& notifyData;		// Referencia para os dados de notificação
 
 	/*---LISTAS DO SERVIDOR---*/
