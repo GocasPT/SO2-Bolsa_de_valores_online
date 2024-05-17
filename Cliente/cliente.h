@@ -10,7 +10,10 @@
 
 typedef struct {
 	OVERLAPPED oOverlap;
-	HANDLE hPipe, hEvent;
+	OVERLAPPED oOverlapExtra;
+	HANDLE hPipe;
+	HANDLE hEvent;
+	HANDLE hEventExtra;
 } PIPE_INST;
 
 typedef struct {

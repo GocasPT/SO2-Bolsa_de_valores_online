@@ -66,8 +66,6 @@ USER* UserManager::removeUser(USER_LIST& userList, USER_QUEUE& userQueue, USER* 
 		return nullptr;
 
 	user = userQueue.front();
-	user->connected = true;
-	user->inQueue = false;
 	userQueue.pop();
 
 	return user;

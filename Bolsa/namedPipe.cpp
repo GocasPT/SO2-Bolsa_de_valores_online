@@ -17,6 +17,16 @@ PIPE_INST NamedPipe::newNamedPipe() {
 	ZeroMemory(&newPipeInst.oOverlap, sizeof(newPipeInst.oOverlap));
 	newPipeInst.oOverlap.hEvent = newPipeInst.hEvent;
 
+	newPipeInst.hEventExtra = CreateEvent(NULL, TRUE, TRUE, NULL);
+	if (newPipeInst.hEventExtra == NULL) {
+		std::stringstream ss;
+		ss << "Erro ao criar o evento para a nova instancia de named pipe (" << GetLastError() << ")";
+		throw std::runtime_error(ss.str());
+	}
+
+	ZeroMemory(&newPipeInst.oOverlapExtra, sizeof(newPipeInst.oOverlapExtra));
+	newPipeInst.oOverlapExtra.hEvent = newPipeInst.hEventExtra;
+
 	newPipeInst.hPipe = CreateNamedPipe(PIPE_BOLSA_NAME, PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, sizeof(MESSAGE), sizeof(MESSAGE), PIPE_TIMEOUT, NULL);
 	if (newPipeInst.hPipe == INVALID_HANDLE_VALUE) {
 		std::stringstream ss;
@@ -115,7 +125,7 @@ bool NamedPipe::auth(BOLSA& servidor, USER& loginUser) {
 	else
 		code = CODE_DENID; // Login inválido
 
-	send(servidor.hPipeInst, { code, _T('\0') }); // Manda mensagem de login
+	send(servidor.hPipeInst, { code }); // Manda mensagem de login
 
 	return code == CODE_LOGIN; // Retorna se o login foi válido
 }
@@ -235,10 +245,10 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 					}
 					data->hUsersThreadList.push_back(newUserThread);
 				} else {
-					std::_tcout << _T("na fila de espera") << std::endl;
+					std::_tcout << _T(" na fila de espera") << std::endl;
 
-					user.connected = false;
-					send(data->hPipeInst, { CODE_FULL, _T('\0') });
+					user.inQueue = true;
+					send(data->hPipeInst, { CODE_FULL });
 				}
 				
 			} else {
@@ -247,7 +257,7 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 				data->hPipeInst = newNamedPipe();
 			}
 
-			std::_tcout << _T("A criar um novo named pipe para recber um novo cliente...");
+			std::_tcout << _T("A criar um novo named pipe para recber um novo cliente...") << std::endl;
 			data->hPipeInst = newNamedPipe();
 
 			std::_tcout << TAG_INPUT;
@@ -282,7 +292,7 @@ DWORD WINAPI NamedPipe::notifyRoutine(LPVOID lpParam) {
 		ss.str(std::TSTRING());
 		ss << notify.company->name << _T(" ") << notify.oldPrice << _T(" ") << notify.company->pricePerStock;
 
-		std::_tcout << TAG_NORMAL <<_T("O preço da empresa ") << notify.company->name << _T(" foi alterado de ") << notify.oldPrice << _T(" para ") << notify.company->pricePerStock;
+		std::_tcout << std::endl << TAG_NORMAL <<_T("O preço da empresa ") << notify.company->name << _T(" foi alterado de ") << notify.oldPrice << _T(" para ") << notify.company->pricePerStock << std::endl;
 
 		_tcscpy_s(msg.data, ss.str().c_str());
 		sendAll(data->userList, msg);
@@ -309,8 +319,11 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 		do {
 			std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] A comunicar com o cliente ") << data->myUser->name << std::endl;
 
-			//TODO: send message to client (its connected and talking with)
-			// send(data->myUser->hPipeInst, { CODE_FULL, _T('\0') });
+			if (data->myUser->inQueue) {
+				data->myUser->inQueue = false;
+				data->myUser->connected = true;
+				send(data->myUser->hPipeInst, { CODE_FREE_SLOT });
+			}
 
 			while (data->isRunning && data->myUser->connected) {
 				ret = ReadFile(data->myUser->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &data->myUser->hPipeInst.oOverlap);
@@ -384,8 +397,6 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 				ss.clear();
 				ss.flush();
 				ss.str(std::TSTRING());
-
-				std::_tcout << TAG_INPUT;
 			}
 
 			EnterCriticalSection(&data->cs);
@@ -429,12 +440,12 @@ void NamedPipe::send(PIPE_INST hPipeInst, MESSAGE msg) {
 	BOOL ret;
 	DWORD nBytes;
 
-	ret = WriteFile(hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &hPipeInst.oOverlap);
+	ret = WriteFile(hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &hPipeInst.oOverlapExtra);
 	while (!ret) {
 		switch (GetLastError()) {
 			case ERROR_IO_PENDING:
-				WaitForSingleObject(hPipeInst.hEvent, INFINITE);
-				ret = GetOverlappedResult(hPipeInst.hPipe, &hPipeInst.oOverlap, &nBytes, FALSE);
+				WaitForSingleObject(hPipeInst.hEventExtra, INFINITE);
+				ret = GetOverlappedResult(hPipeInst.hPipe, &hPipeInst.oOverlapExtra, &nBytes, FALSE);
 				break;
 
 			default:
@@ -462,7 +473,7 @@ void NamedPipe::responseList(TDATA& data) {
 		for (auto it = data.companyList.begin(); it != data.companyList.end(); it++) {
 			ss.str(std::TSTRING());
 
-			ss << _T("Nome: ") << it->name << _T(" | Nº de Ações: ") << it->numFreeStocks << _T(" | Preço por Ação: ") << it->pricePerStock;
+			ss << it->name << _T(" ") << it->numFreeStocks << _T(" ") << it->pricePerStock;
 
 			msg.code = CODE_LISTC_ITEM;
 			_tcscpy_s(msg.data, ss.str().c_str());
@@ -474,7 +485,7 @@ void NamedPipe::responseList(TDATA& data) {
 		}
 	}
 
-	send(data.myUser->hPipeInst, { CODE_LISTC_ITEM, _T('\0') });
+	send(data.myUser->hPipeInst, { CODE_LISTC_ITEM });
 }
 
 void NamedPipe::responseBuy(TDATA& data, std::TSTRING companyName, DWORD amount) {

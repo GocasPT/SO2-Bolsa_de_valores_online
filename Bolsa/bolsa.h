@@ -14,7 +14,10 @@
 
 typedef struct {
 	OVERLAPPED oOverlap;			// Overlapped structure for async I/O
-	HANDLE hPipe, hEvent;			// Pipe handle and event handle
+	OVERLAPPED oOverlapExtra;		// Overlapped structure for extra async I/O
+	HANDLE hPipe;					// Handle of the pipe
+	HANDLE hEvent;			// Event handle
+	HANDLE hEventExtra;			// Extra event handle
 } PIPE_INST;
 
 typedef struct USER : USER_DATA {

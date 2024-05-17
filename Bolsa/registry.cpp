@@ -17,5 +17,7 @@ void Registry::config(BOLSA& servidor) {
 		std::_tcout << _T("Leitura do valor no registry [ MAX USERS: ") << servidor.maxUsers << _T("]") << std::endl;
 	}
 
+	servidor.maxUsers = 1;
+
 	std::_tcout << _T("Dados lidos com sucesso") << std::endl << std::endl;
 }

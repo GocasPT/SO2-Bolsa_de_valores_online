@@ -47,8 +47,13 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	bool valid = false;
 
 	if (!args[0].compare(CMD_HELP)) {
-		//TODO: help command
-		std::_tcout << TAG_WARNING << _T("Comando de ajuda não implementado") << std::endl;
+		std::_tcout << TAG_NORMAL << _T("Comandos disponíveis:") << std::endl <<
+			_T("\t") << CMD_LOGIN << _T(" <username> <password>") << std::endl <<
+			_T("\t") << CMD_LISTC << std::endl <<
+			_T("\t") << CMD_BUY << _T(" <nome-empresa> <número-ações>") << std::endl <<
+			_T("\t") << CMD_SELL << _T(" <nome-empresa> <número-ações>") << std::endl <<
+			_T("\t") << CMD_BALANCE << std::endl <<
+			_T("\t") << CMD_EXIT << std::endl << std::endl;
 
 		SetEvent(userData.hEventConsole);
 
@@ -83,7 +88,6 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	else if (!args[0].compare(CMD_EXIT)) {
 		if (args.size() != 1) {
 			std::_tcout << TAG_WARNING << _T("Formato errado") << std::endl << _T("\t") << CMD_EXIT << std::endl << std::endl;
-			SetEvent(userData.hEventConsole);
 		}
 
 		SetEvent(userData.hEventConsole);
@@ -94,6 +98,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 	// Se não estiver autenticado, não pode executar os comandos seguintes
 	else if (!userData.logged) {
 		std::_tcout << TAG_WARNING << _T("Efetua o login primeiro") << std::endl;
+		SetEvent(userData.hEventConsole);
 		valid = true;
 	}
 

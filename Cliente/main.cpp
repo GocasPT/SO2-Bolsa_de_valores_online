@@ -18,7 +18,7 @@ bool checkServerIsRunnig() {
 }
 
 void configServer(CLIENTE& user) {
-	user.hEventConsole = CreateEvent(NULL, TRUE, TRUE, EVENT_CONSOLE);
+	user.hEventConsole = CreateEvent(NULL, FALSE, FALSE, EVENT_CONSOLE);
 	if (user.hEventConsole == NULL) {
 		std::_tcout << TAG_ERROR << TEXT("Erro ao criar o evento para a consola") << std::endl;
 		exit(-1);

@@ -13,6 +13,7 @@
  */
 void NamedPipe::connectToServer(CLIENTE& user) {
 	std::_tcout << _T("A preparar o overlap I/O do named pipe... ");
+
 	user.hPipeInst.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	if (user.hPipeInst.hEvent == NULL) {
 		std::stringstream ss;
@@ -22,6 +23,17 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 
 	ZeroMemory(&user.hPipeInst.oOverlap, sizeof(OVERLAPPED));
 	user.hPipeInst.oOverlap.hEvent = user.hPipeInst.hEvent;
+
+	user.hPipeInst.hEventExtra = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (user.hPipeInst.hEventExtra == NULL) {
+		std::stringstream ss;
+		ss << "Erro ao criar o evento para o overlap I/O (" << GetLastError() << ")";
+		throw std::runtime_error(ss.str());
+	}
+
+	ZeroMemory(&user.hPipeInst.oOverlapExtra, sizeof(OVERLAPPED));
+	user.hPipeInst.oOverlapExtra.hEvent = user.hPipeInst.hEventExtra;
+
 	std::_tcout << _T("Overlap I/O preparado") << std::endl;
 
 	std::_tcout << _T("A conectar ao servidor...");
@@ -79,7 +91,7 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 
 				case ERROR_BROKEN_PIPE:
 				case ERROR_PIPE_NOT_CONNECTED:
-					std::_tcout << TAG_ERROR << TEXT("O servidor encerrou. Precione o 'Enter' para sair do programa...") << std::endl;
+					std::_tcout << std::endl << TAG_ERROR << TEXT("O servidor encerrou. Precione o 'Enter' para sair do programa...") << std::endl;
 					user->runnig = false;
 					user->logged = false;
 					return THREAD_CODE::STOP;
@@ -116,14 +128,27 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 				break;
 
 			//TODO: recevie free_slot message (its connected and talking with)
-
-			case CODE_LISTC_ITEM:
-				std::_tcout << msg.data << std::endl;
-
-				if (_tcscmp(msg.data, _T("\0")) != 0)
-					continue;
-
+			case CODE_FREE_SLOT:
+				user->inQueue = false;
+				std::_tcout << TEXT("Já está a ser atendido pelo servidor") << std::endl;
 				break;
+
+			case CODE_LISTC_ITEM: {
+				if (_tcscmp(msg.data, _T("\0")) == 0)
+					break;
+
+				std::TSTRING companyName;
+				DWORD numFreeStocks;
+				float pricePerStock;
+				std::_tstringstream ss;
+
+				ss << msg.data;
+				ss >> companyName >> numFreeStocks >> pricePerStock;
+
+				 std::_tcout << _T("Nome: ") << companyName << _T(" | Nº de Ações: ") << numFreeStocks << _T(" | Preço por Ação: ") << pricePerStock << std::endl;
+
+				 continue;
+			}
 
 			case CODE_BALANCE:
 				std::_tcout << _T("O seu saldo é ") << msg.data << std::endl;
@@ -133,9 +158,18 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 				std::_tcout << TAG_NORMAL << msg.data << std::endl;
 				break;
 
-			case CODE_NOTIFY:
-				std::_tcout << std::endl << msg.data << std::endl << TAG_INPUT;
+			case CODE_NOTIFY: {
+				std::TSTRING companyName;
+				float oldPirce, newPrice;
+				std::_tstringstream ss;
+
+				ss << msg.data;
+				ss >> companyName >> oldPirce >> newPrice;
+
+				std::_tcout << std::endl << _T("O preço da empresa '") << companyName << _T("' ") << ( (oldPirce < newPrice) ? _T("aumentou") : _T("diminuiu") ) << _T(" de ") << oldPirce << _T(" para ") << newPrice << _T("!") << std::endl;
+
 				break;
+			}
 		}
 
 		SetEvent(user->hEventConsole);
@@ -156,12 +190,12 @@ void NamedPipe::send(CLIENTE& user, MESSAGE msg) {
 	BOOL ret;
 	DWORD nBytes;
 
-	ret = WriteFile(user.hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user.hPipeInst.oOverlap);
+	ret = WriteFile(user.hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user.hPipeInst.oOverlapExtra);
 	while (!ret) {
 		switch (GetLastError()) {
 			case ERROR_IO_PENDING:
-				WaitForSingleObject(user.hPipeInst.hEvent, INFINITE);
-				ret = GetOverlappedResult(user.hPipeInst.hPipe, &user.hPipeInst.oOverlap, &nBytes, FALSE);
+				WaitForSingleObject(user.hPipeInst.hEventExtra, INFINITE);
+				ret = GetOverlappedResult(user.hPipeInst.hPipe, &user.hPipeInst.oOverlapExtra, &nBytes, FALSE);
 				break;
 
 			default:
@@ -207,7 +241,7 @@ void NamedPipe::requestLogin(CLIENTE& user, std::TSTRING name, std::TSTRING pass
  */
 void NamedPipe::requestList(CLIENTE& user) {
 	try {
-		send(user, { CODE_LISTC , _T('\0') });
+		send(user, { CODE_LISTC });
 	} catch (std::runtime_error& e) {
 		std::_tcout << TAG_ERROR << e.what() << std::endl;
 	}
@@ -264,7 +298,7 @@ void NamedPipe::requestSell(CLIENTE& user, std::TSTRING company, DWORD numOfStoc
  */
 void NamedPipe::requestBalance(CLIENTE& user) {
 	try {
-		send(user, { CODE_BALANCE, _T('\0')});
+		send(user, { CODE_BALANCE });
 	} catch (std::runtime_error& e) {
 		std::_tcout << TAG_ERROR << e.what() << std::endl;
 	}

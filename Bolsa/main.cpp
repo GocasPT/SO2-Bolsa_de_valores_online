@@ -27,7 +27,7 @@ void closeServer(BOLSA& servidor) {
 	CompanyManager::close(servidor);
 	SharedMemory::close(servidor);
 	NamedPipe::close(servidor);
-	Files::write_files(servidor);
+	//TODO: Files::write_files(servidor);
 }
 
 void configServer(BOLSA &servidor) {
