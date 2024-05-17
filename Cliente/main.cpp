@@ -38,13 +38,13 @@ int _tmain(int argc, std::TSTRING argv[]) {
 #endif 
 
 	if (!checkServerIsRunnig()) {
-		std::_tcout << TAG_ERROR << TEXT("O servidor não está a correr") << std::endl;
+		std::_tcout << TAG_ERROR << TEXT("O servidor nÃ£o estÃ¡ a correr") << std::endl;
 		exit(-1);
 	}
 
 	configServer(currentUser);	
 
-	std::_tcout << TAG_NORMAL << TEXT("Executa o comando '") << CMD_LOGIN << _T("' para puder ligar ao servidor") << std::endl;
+	std::_tcout << TAG_NORMAL << TEXT("Executa o comando '") << CMD_LOGIN << _T("' para poder ligar ao servidor") << std::endl;
 
 	cmd::consoleRoutine(currentUser);
 

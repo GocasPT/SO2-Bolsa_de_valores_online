@@ -158,7 +158,7 @@ DWORD WINAPI CompanyManager::timerRoutine(LPVOID lpParam) {
 		Sleep(1000 * data->time);
 
 		*(data->isPaused) = false;
-		std::_tcout << std::endl << _T("Operações de compra e venda de ações retornadas") << std::endl << TAG_INPUT;
+		std::_tcout << std::endl << _T("Operações de compra e venda de ações retomadas") << std::endl << TAG_INPUT;
 	}
 
 	std::_tcout << _T("A encerrar a thread do timer...") << std::endl;

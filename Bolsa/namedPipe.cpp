@@ -87,7 +87,7 @@ void NamedPipe::config(BOLSA& servidor) {
 		throw std::runtime_error(ss.str());
 	}
 
-	std::_tcout << TAG_NORMAL << _T("Configuração do named piep concluida, já está à esperade um cliente para connectar") << std::endl << std::endl;
+	std::_tcout << TAG_NORMAL << _T("Configuração do named pipe concluída, à espera da conexão de um cliente...") << std::endl << std::endl;
 }
 
 bool NamedPipe::auth(BOLSA& servidor, USER& loginUser) {
@@ -257,7 +257,7 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 				data->hPipeInst = newNamedPipe();
 			}
 
-			std::_tcout << _T("A criar um novo named pipe para recber um novo cliente...") << std::endl;
+			std::_tcout << _T("A criar um novo named pipe para atender um novo cliente...") << std::endl;
 			data->hPipeInst = newNamedPipe();
 
 			std::_tcout << TAG_INPUT;
@@ -267,7 +267,7 @@ DWORD WINAPI NamedPipe::reciverRoutine(LPVOID lpParam) {
 		data->isRunning = false;
 	}
 
-	std::_tcout << _T("A sair do reciverRoutine...") << std::endl;
+	std::_tcout << _T("A sair do receiverRoutine...") << std::endl;
 
 	return 0;
 }
@@ -313,7 +313,7 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 
 	tID = tIDCount++;
 	data->tID = tID;
-	std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Iniciada, pronto para receber pedidos");
+	std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Iniciada, pronta para receber pedidos");
 
 	try {
 		do {
@@ -423,7 +423,7 @@ DWORD WINAPI NamedPipe::userRoutine(LPVOID lpParam) {
 		LeaveCriticalSection(&data->cs);
 	}
 
-	std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Não existe nenhum cliente para atener. A sair...") << std::endl;
+	std::_tcout << std::endl << _T("[THREAD ") << tID << _T("] Não existe nenhum cliente para atender. A sair...") << std::endl;
 
 	// Sinaliza a thread de dados para remover esta thread e o seu TData da lista
 	HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, EVENT_DATA);

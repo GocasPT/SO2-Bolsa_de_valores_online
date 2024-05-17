@@ -31,7 +31,7 @@ void closeServer(BOLSA& servidor) {
 }
 
 void configServer(BOLSA &servidor) {
-	std::_tcout << TAG_NORMAL << _T("A configurar o servidor servidor...") << std::endl << std::endl;
+	std::_tcout << TAG_NORMAL << _T("A configurar o servidor...") << std::endl << std::endl;
 
 	servidor.isRunning = true;
 	servidor.isPaused = false;
@@ -59,7 +59,7 @@ int _tmain(int argc, std::TSTRING argv[]) {
 #endif 
 
 	if (checkServerRunning()) {
-		std::_tcout << TAG_ERROR << _T("Ja existe uma instancia do programa 'Bolsa' em execução") << std::endl;
+		std::_tcout << TAG_ERROR << _T("Já existe uma instância do programa 'Bolsa' em execução") << std::endl;
 		exit(-1);
 	}
 

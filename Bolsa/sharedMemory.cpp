@@ -1,7 +1,7 @@
 #include "sharedMemory.h"
 
 void SharedMemory::config(BOLSA& servidor) {
-	std::_tcout << _T("A configurar a memória partilhada para mandar aos board(GUI)s...") << std::endl;
+	std::_tcout << _T("A configurar a memória partilhada para mandar as board(GUI)s...") << std::endl;
 
 	servidor.hSharedMemory = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(SHARED_MEMORY), SHARED_MEMORY_NAME);
 	if (servidor.hSharedMemory == NULL) {
@@ -26,7 +26,7 @@ void SharedMemory::config(BOLSA& servidor) {
 	servidor.sharedMemory->numBoards = 0;
 	servidor.sharedMemory->boardsRead = 0;
 
-	std::_tcout << TAG_NORMAL << _T("Configuração da memória partillhada concluída, disponível para os programas board(GUI)s se conectarem") << std::endl << std::endl;
+	std::_tcout << TAG_NORMAL << _T("Configuração da memória partillhada concluída, disponível para a conexão das board(GUI)s") << std::endl << std::endl;
 }
 
 void SharedMemory::update(BOLSA &servidor) {

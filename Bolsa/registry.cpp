@@ -1,7 +1,7 @@
 #include "registry.h"
 
 void Registry::config(BOLSA& servidor) {
-	std::_tcout << _T("A buscar os dados ao Registry...") << std::endl;
+	std::_tcout << _T("A procurar os dados no Registry...") << std::endl;
 
 	HKEY hKey;
 	DWORD disposition;
@@ -14,7 +14,7 @@ void Registry::config(BOLSA& servidor) {
 	} else {
 		DWORD dwSize = sizeof(servidor.maxUsers);
 		RegQueryValueEx(hKey, VALUE_MAX_USERS, NULL, NULL, (LPBYTE)&servidor.maxUsers, &dwSize);
-		std::_tcout << _T("Leitura do valor no registry [ MAX USERS: ") << servidor.maxUsers << _T("]") << std::endl;
+		std::_tcout << _T("Leitura do valor do registry [ MAX USERS: ") << servidor.maxUsers << _T("]") << std::endl;
 	}
 
 	std::_tcout << _T("Dados lidos com sucesso") << std::endl << std::endl;

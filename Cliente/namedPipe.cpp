@@ -57,7 +57,7 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 		ss << "Erro ao criar a thread (" << GetLastError() << ")";
 		throw std::runtime_error(ss.str());
 	}
-	std::_tcout << _T("Thread para recber mesagens do servidor criada com sucesso") << std::endl;
+	std::_tcout << _T("Thread para receber mesagens do servidor criada com sucesso") << std::endl;
 }
 
 /**
@@ -76,7 +76,7 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 	BOOL ret;
 	DWORD nBytes;
 
-	std::_tcout << _T("A espera de autenticação... ");
+	std::_tcout << _T("à espera de autenticação... ");
 
 	//TODO: msg with trash
 
@@ -91,7 +91,7 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 
 				case ERROR_BROKEN_PIPE:
 				case ERROR_PIPE_NOT_CONNECTED:
-					std::_tcout << std::endl << TAG_ERROR << TEXT("O servidor encerrou. Precione o 'Enter' para sair do programa...") << std::endl;
+					std::_tcout << std::endl << TAG_ERROR << TEXT("O servidor encerrou. Pressione 'Enter' para sair do programa...") << std::endl;
 					user->runnig = false;
 					user->logged = false;
 					return THREAD_CODE::STOP;
@@ -115,16 +115,16 @@ DWORD WINAPI NamedPipe::reciverMessage(LPVOID lpParam) {
 					break;
 
 				user->logged = true;
-				std::_tcout << TEXT("User autnenticado. Bem-vindo ") << user->name << _T("!") << std::endl;
+				std::_tcout << TEXT("User autenticado. Bem-vindo ") << user->name << _T("!") << std::endl;
 				break;
 
 			case CODE_DENID:
-				std::_tcout << TEXT("Autenticação negada. Verifique as credência novamente") << std::endl;
+				std::_tcout << TEXT("Autenticação negada. Verifique as credênciais") << std::endl;
 				return 1;
 
 			case CODE_FULL:
 				user->inQueue = true;
-				std::_tcout << TEXT("Servidor cheio, estás na fila de espera. Tens permissão para utilizar alguns comandos") << std::endl;
+				std::_tcout << TEXT("Servidor cheio, está na fila de espera. Tem permissão para utilizar alguns comandos") << std::endl;
 				break;
 
 			//TODO: recevie free_slot message (its connected and talking with)

@@ -71,7 +71,7 @@ bool cmd::validateCommand(CLIENTE& userData, std::vector<std::TSTRING> args) {
 		}
 
 		else if (userData.logged) {
-			std::_tcout << TAG_WARNING << _T("Já autenticates como ") << userData.name << _T(". Para torcar de utilizar, sair do programa com '") << CMD_EXIT << _T("'") << std::endl;
+			std::_tcout << TAG_WARNING << _T("Autenticação feita como ") << userData.name << _T(". Para trocar de utilizar, sair do programa com '") << CMD_EXIT << _T("'") << std::endl;
 			SetEvent(userData.hEventConsole);
 		}
 

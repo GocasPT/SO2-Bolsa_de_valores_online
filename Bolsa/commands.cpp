@@ -143,7 +143,7 @@ bool cmd::validateCommand(BOLSA& servidor, std::vector<std::TSTRING> args) {
 			return true;
 		}
 	} catch (std::invalid_argument e) {
-		std::_tcout << TAG_ERROR << _T("Argumentos inválidos. Veriica o tipo do argumento pedido") << std::endl;
+		std::_tcout << TAG_ERROR << _T("Argumentos inválidos. Verifica o tipo do argumento pedido") << std::endl;
 		return true;
 	}
 	
@@ -158,7 +158,7 @@ void cmd::showData(BOLSA& servidor) {
 		return;
 	} else {
 		for (auto &data : servidor.tDataList) {
-			std::_tcout << _T("Thread ") << data.tID << _T(" a atender o clienten ") << data.myUser->name << std::endl;
+			std::_tcout << _T("Thread ") << data.tID << _T(" a atender o cliente ") << data.myUser->name << std::endl;
 		}
 	}
 

@@ -66,7 +66,7 @@ void Files::read_files(BOLSA& servidor) {
 }
 
 void Files::write_files(BOLSA& servidor) {
-	std::_tcout << _T("A salvar dados no ficheiros... (0/") << TOTAL_FILES - 1 << _T(")") << std::endl;
+	std::_tcout << _T("A guardar os dados nos ficheiros... (0/") << TOTAL_FILES - 1 << _T(")") << std::endl;
 
 	std::_tofstream file;
 
@@ -83,7 +83,7 @@ void Files::write_files(BOLSA& servidor) {
 		throw std::runtime_error(ss.str());
 	}
 
-	std::_tcout << _T("Dados salvos no ficheiro '") << FILE_USERS << _T("' com sucesso (1/") << TOTAL_FILES - 1 << _T(")") << std::endl;
+	std::_tcout << _T("Dados guardados no ficheiro '") << FILE_USERS << _T("' com sucesso (1/") << TOTAL_FILES - 1 << _T(")") << std::endl;
 
 	file.open(FILE_COMPANIES, std::ios::out | std::ios::trunc);
 	if (file.is_open()) {
@@ -98,7 +98,7 @@ void Files::write_files(BOLSA& servidor) {
 		throw std::runtime_error(ss.str());
 	}
 
-	std::_tcout << _T("Dados salvos no ficheiro '") << FILE_COMPANIES << _T("' com sucesso (2/") << TOTAL_FILES - 1 << _T(")") << std::endl;
+	std::_tcout << _T("Dados guardados no ficheiro '") << FILE_COMPANIES << _T("' com sucesso (2/") << TOTAL_FILES - 1 << _T(")") << std::endl;
 
-	std::_tcout << _T("Dados salvos no ficheiroscom sucesso") << std::endl << std::endl;
+	std::_tcout << _T("Dados guardados no ficheiroscom sucesso") << std::endl << std::endl;
 }
