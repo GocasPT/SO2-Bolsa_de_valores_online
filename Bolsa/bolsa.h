@@ -90,7 +90,7 @@ typedef struct {
 
 	/*---NAMED PIPE---*/
 	PIPE_INST hPipeInst;			// Current receiver pipe
-	HANDLE hRecieverThread;			// Receiver thread
+	HANDLE hReceiverThread;			// Receiver thread
 
 	/*---NOTIFY---*/
 	HANDLE hNotifyThread;			// Notify thread
