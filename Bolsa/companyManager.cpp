@@ -43,7 +43,7 @@ void CompanyManager::addCompany(BOLSA& servidor, std::TSTRING name, DWORD numOfS
 	std::_tcout << TAG_NORMAL << _T("Empresa adicionada com sucesso") << std::endl << _T("Nome: ") << name << _T(" | Nº de Ações: ") << company.numFreeStocks << _T(" | Preço por Ação: ") << company.pricePerStock << std::endl << std::endl;
 
 	SharedMemory::update(servidor);
-
+}
 
 void CompanyManager::listCompanies(BOLSA& servidor) {
 	std::_tcout << TAG_NORMAL << _T("Listagem de Empresas:") << std::endl;
@@ -165,7 +165,6 @@ DWORD WINAPI CompanyManager::timerRoutine(LPVOID lpParam) {
 
 	return THREAD_CODE::SUCESS;
 }
-
 
 void CompanyManager::close(BOLSA& servidor) {
 	std::_tcout << _T("A fechar a thread e recursos do timer...") << std::endl;
