@@ -253,9 +253,10 @@ DWORD WINAPI NamedPipe::receiverRoutine(LPVOID lpParam) {
 				}
 				
 			} else {
+				send(data->hPipeInst, { CODE_DENID });
+				Sleep(1000);
 				CloseHandle(data->hPipeInst.hPipe);
 				CloseHandle(data->hPipeInst.hEvent);
-				data->hPipeInst = newNamedPipe();
 			}
 
 			std::_tcout << _T("A criar um novo named pipe para atender um novo cliente...") << std::endl;
@@ -517,15 +518,15 @@ void NamedPipe::responseBuy(TDATA& data, std::TSTRING companyName, DWORD amount)
 		if (SWManager::addStock(*data.myUser, *company, amount)) {
 			_tcscpy_s(msg.data, _T("Compra efetuada com sucesso"));
 			CompanyManager::updateStock(data.notifyData, *company, CompanyManager::BUY);
+
+			data.sharedMemory.lastTransaction.numStocks = amount;
+			_tcscpy_s(data.sharedMemory.lastTransaction.username, data.myUser->name);
+			_tcscpy_s(data.sharedMemory.lastTransaction.companyName, company->name);
+			data.sharedMemory.lastTransaction.buy = true;
 		}
 		else
 			_tcscpy_s(msg.data, _T("Chegates ao limites de stocks que podes ter"));
 	}
-
-	data.sharedMemory.lastTransaction.numStocks = amount;
-	_tcscpy_s(data.sharedMemory.lastTransaction.username, data.myUser->name);
-	_tcscpy_s(data.sharedMemory.lastTransaction.companyName, company->name);
-	data.sharedMemory.lastTransaction.buy = true;
 
 	msg.code = CODE_GENERIC_FEEDBACK;
 	send(data.myUser->hPipeInst, msg);
