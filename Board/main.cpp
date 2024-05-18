@@ -34,7 +34,6 @@ void printBoard(BOARD board) {
 }
 
 int _tmain(int argc, std::TSTRING argv[]) {
-	// VARIABLES
 	BOARD board{};
 	board.isRunning = true;
 	board.isPaused = false;
