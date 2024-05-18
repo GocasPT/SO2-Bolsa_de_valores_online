@@ -73,10 +73,12 @@ int _tmain(int argc, std::TSTRING argv[]) {
 	}
 
 	while (board.isRunning){
-		if (!SharedMemory::read(board)) {
+		if (SharedMemory::read(board)) {
+			printBoard(board);
+		}
+		else {
 			board.isRunning = false;
 		}
-		printBoard(board);
 		std::_tcout << std::endl << std::endl;
 	}
 

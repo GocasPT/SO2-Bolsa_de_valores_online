@@ -50,6 +50,7 @@ bool SharedMemory::read(BOARD& board) {
         }
         return true;
     } else {
+        std::_tcout << _T("A Bolsa fechou, prime ENTER para sair") << std::endl << std::endl;
         close(board);
         return false;
     }
