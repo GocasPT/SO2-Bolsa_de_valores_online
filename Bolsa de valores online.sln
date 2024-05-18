@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SO2 Utility", "SO2 Utility\SO2 Utility.vcxproj", "{AD1144A7-4EAA-4FF8-9444-CAC4EE3F6629}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BoardGUI", "BoardGUI\BoardGUI.vcxproj", "{0890023E-3AE8-4E14-AD4C-9546A268A596}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -76,6 +78,18 @@ Global
 		{AD1144A7-4EAA-4FF8-9444-CAC4EE3F6629}.Release|x64.Build.0 = Release|x64
 		{AD1144A7-4EAA-4FF8-9444-CAC4EE3F6629}.Release|x86.ActiveCfg = Release|Win32
 		{AD1144A7-4EAA-4FF8-9444-CAC4EE3F6629}.Release|x86.Build.0 = Release|Win32
+		{0890023E-3AE8-4E14-AD4C-9546A268A596}.Debug|x64.ActiveCfg = Debug|x64
+		{0890023E-3AE8-4E14-AD4C-9546A268A596}.Debug|x64.Build.0 = Debug|x64
+		{0890023E-3AE8-4E14-AD4C-9546A268A596}.Debug|x86.ActiveCfg = Debug|Win32
+		{0890023E-3AE8-4E14-AD4C-9546A268A596}.Debug|x86.Build.0 = Debug|Win32
+		{0890023E-3AE8-4E14-AD4C-9546A268A596}.Just Board|x64.ActiveCfg = Debug|x64
+		{0890023E-3AE8-4E14-AD4C-9546A268A596}.Just Board|x64.Build.0 = Debug|x64
+		{0890023E-3AE8-4E14-AD4C-9546A268A596}.Just Board|x86.ActiveCfg = Debug|Win32
+		{0890023E-3AE8-4E14-AD4C-9546A268A596}.Just Board|x86.Build.0 = Debug|Win32
+		{0890023E-3AE8-4E14-AD4C-9546A268A596}.Release|x64.ActiveCfg = Release|x64
+		{0890023E-3AE8-4E14-AD4C-9546A268A596}.Release|x64.Build.0 = Release|x64
+		{0890023E-3AE8-4E14-AD4C-9546A268A596}.Release|x86.ActiveCfg = Release|Win32
+		{0890023E-3AE8-4E14-AD4C-9546A268A596}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
