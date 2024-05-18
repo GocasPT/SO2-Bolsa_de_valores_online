@@ -3,6 +3,8 @@
 void SharedMemory::config(BOLSA& servidor) {
 	std::_tcout << _T("A configurar a memória partilhada para mandar as board(GUI)s...") << std::endl;
 
+	servidor.notifyData.company = nullptr;
+
 	servidor.hSharedMemory = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(SHARED_MEMORY), SHARED_MEMORY_NAME);
 	if (servidor.hSharedMemory == NULL) {
 		std::_tcout << _T("[ERRO] Falha na criação da memória partilhada dos dados: ") << GetLastError() << std::endl;
@@ -41,6 +43,12 @@ void SharedMemory::update(BOLSA &servidor) {
 	servidor.sharedMemory->numCompanies = servidor.companyList.size();
 
 	// TODO acrescentar última transação: servidor.data->lastTransaction = servidor.lastTransaction;
+	if (servidor.notifyData.company) {
+		_tcscpy_s(servidor.sharedMemory->lastTransaction.companyName, servidor.notifyData.company->name);
+		_tcscpy_s(servidor.sharedMemory->lastTransaction.username, servidor.notifyData.user.name);
+		servidor.sharedMemory->lastTransaction.numStocks = servidor.notifyData.numStocks;
+		servidor.sharedMemory->lastTransaction.buy = servidor.notifyData.oldPrice < servidor.notifyData.company->pricePerStock;
+	}
 
 	servidor.sharedMemory->boardsRead = 0;
 	SetEvent(servidor.hEvent);
