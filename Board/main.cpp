@@ -54,7 +54,8 @@ int _tmain(int argc, std::TSTRING argv[]) {
 
 	board.hExitEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, EXIT_EVENT_NAME);
 	if (board.hExitEvent == NULL) {
-		std::_tcout << _T("[ERRO] Falha na abertura do evento de exit: ") << GetLastError() << std::endl;
+		std::_tcout << std::endl << _T("Não existe nenhum programa Bolsa a ser executado") << std::endl;
+		std::_tcout << _T("A terminar o programa...") << std::endl;
 		return 1;
 	}
 
