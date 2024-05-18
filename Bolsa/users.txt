@@ -1,5 +1,6 @@
-maria qwerty 105.4
-ze 123abc 666
-bata 123 420.20
-duraes god_debian 1250
-joao 1234 3000000000000
+maria qwerty 420.69
+ze zetest 5919.1
+gui abc 1234.56
+joao 1234 3000
+pedro 2424 1927.1
+bata 123 10.5 
