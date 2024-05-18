@@ -299,8 +299,6 @@ DWORD WINAPI NamedPipe::notifyRoutine(LPVOID lpParam) {
 		_tcscpy_s(msg.data, ss.str().c_str());
 		sendAll(data->userList, msg);
 
-		_tcscpy_s(data->sharedMemory->lastTransaction.companyName, notify.company->name);
-
 		SharedMemory::update(*data);
 
 		std::_tcout << TAG_INPUT;
@@ -517,12 +515,9 @@ void NamedPipe::responseBuy(TDATA& data, std::TSTRING companyName, DWORD amount)
 	else {
 		if (SWManager::addStock(*data.myUser, *company, amount)) {
 			_tcscpy_s(msg.data, _T("Compra efetuada com sucesso"));
+			_tcscpy_s(data.notifyData.user.name, data.myUser->name);
+			data.notifyData.numStocks = amount;
 			CompanyManager::updateStock(data.notifyData, *company, CompanyManager::BUY);
-
-			data.sharedMemory.lastTransaction.numStocks = amount;
-			_tcscpy_s(data.sharedMemory.lastTransaction.username, data.myUser->name);
-			_tcscpy_s(data.sharedMemory.lastTransaction.companyName, company->name);
-			data.sharedMemory.lastTransaction.buy = true;
 		}
 		else
 			_tcscpy_s(msg.data, _T("Chegates ao limites de stocks que podes ter"));
@@ -550,14 +545,11 @@ void NamedPipe::responseSell(TDATA& data, std::TSTRING companyName, DWORD amount
 
 	else if (SWManager::removeStock(*data.myUser, *company, amount)) {
 		_tcscpy_s(msg.data, _T("Venda efetuada com sucesso"));
+		data.notifyData.numStocks = amount;
+		_tcscpy_s(data.notifyData.user.name, data.myUser->name);
 		CompanyManager::updateStock(data.notifyData, *company, CompanyManager::SELL);
 	} else
 		_tcscpy_s(msg.data, _T("Não tens esse número de ações para vender"));
-
-	data.sharedMemory.lastTransaction.numStocks = amount;
-	_tcscpy_s(data.sharedMemory.lastTransaction.username, data.myUser->name);
-	_tcscpy_s(data.sharedMemory.lastTransaction.companyName, company->name);
-	data.sharedMemory.lastTransaction.buy = false;
 
 	msg.code = CODE_GENERIC_FEEDBACK;
 	send(data.myUser->hPipeInst, msg);

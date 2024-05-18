@@ -28,6 +28,7 @@ typedef struct USER : USER_DATA {
 typedef struct {
 	COMPANY* company;				// Ponteiro para a empresa com última alteração
 	float oldPrice;					// Preço antigo (preço atual já alterado)
+	DWORD numStocks;				// Número de ações
 	USER_DATA user;
 } NOTIFY_DATA;
 

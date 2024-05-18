@@ -61,9 +61,11 @@ void SharedMemory::close(BOARD& board) {
 
     CloseHandle(board.hEvent);
 
-    board.sharedMemory->numBoards--;
+    if (!board.sharedMemory) {
+        board.sharedMemory->numBoards--;
+        UnmapViewOfFile(board.sharedMemory);
+    }
 
-    UnmapViewOfFile(board.sharedMemory);
     CloseHandle(board.hSharedMemory);
 
     std::_tcout << _T("Memória partilhada fechada com sucesso") << std::endl << std::endl;
