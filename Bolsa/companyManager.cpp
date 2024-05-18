@@ -71,7 +71,6 @@ COMPANY* CompanyManager::getCompany(COMPANY_LIST& companyList, std::TSTRING name
 }
 
 void CompanyManager::updateStock(BOLSA& servidor, std::TSTRING name, float pricePerStock) {
-	//TODO: fix variation
 	COMPANY* company = getCompany(servidor.companyList, name);
 	if (company == nullptr) {
 		std::_tcout << TAG_WARNING << _T("Empresa não encontrada") << std::endl;
@@ -81,8 +80,7 @@ void CompanyManager::updateStock(BOLSA& servidor, std::TSTRING name, float price
 	float oldPrice = company->pricePerStock;
 	company->pricePerStock = pricePerStock;
 
-	//TODO: show dif in price (old to new OR variation percentage)
-	std::_tcout << TAG_NORMAL << _T("Preço das ações atualizado com sucesso") << std::endl << _T("Nome: ") << name << _T(" | Preço por Ação: ") << company->pricePerStock << std::endl << std::endl;
+	std::_tcout << TAG_NORMAL << _T("Preço das ações atualizado com sucesso") << std::endl << _T("Nome: ") << name << _T(" | Preço por Ação: ") << _T(" de ") << oldPrice << _T(" para ") << company->pricePerStock << std::endl << std::endl;
 
 	//TODO: SetEvent(servidor.hConsolaEvent);
 
@@ -94,17 +92,16 @@ void CompanyManager::updateStock(BOLSA& servidor, std::TSTRING name, float price
 }
 
 void CompanyManager::updateStock(NOTIFY_DATA& notifyData, COMPANY& company, OPERATION opType) {
-	//TODO: fix variation
-	float variation = (rand() % 100) / 100.0f;
 	float oldPrice = company.pricePerStock;
+	float variation = (rand() % 10) / 100.0f;
 
 	switch (opType) {
 		case CompanyManager::BUY:
-			company.pricePerStock += variation;
+			company.pricePerStock *= 1.0f + variation;
 			break;
 
 		case CompanyManager::SELL:
-			company.pricePerStock -= variation;
+			company.pricePerStock *= 0.75f + variation;
 			break;
 	}
 
