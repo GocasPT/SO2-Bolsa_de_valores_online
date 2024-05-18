@@ -28,6 +28,7 @@ typedef struct USER : USER_DATA {
 typedef struct {
 	COMPANY* company;				// Ponteiro para a empresa com última alteração
 	float oldPrice;					// Preço antigo (preço atual já alterado)
+	DWORD numStocks;				// Número de ações
 	USER_DATA user;
 } NOTIFY_DATA;
 
@@ -41,6 +42,7 @@ typedef struct {
 	/*--REFERENCIAS DO ERVIDOR---*/
 	bool& isRunning;				// Referencia para o estado do servidor
 	bool& isPaused;					// Referencia para o estado do servidor
+	SHARED_MEMORY& sharedMemory;		// Referencia para a memória partilhada
 	NOTIFY_DATA& notifyData;		// Referencia para os dados de notificação
 
 	/*---LISTAS DO SERVIDOR---*/
@@ -103,7 +105,7 @@ typedef struct {
 	TDATA_LIST tDataList;			// Data for each thread
 	CRITICAL_SECTION cs;			// Critical section for shared data
 
-
+	HANDLE hExitEvent;
 } BOLSA;
 
 #endif // !BOLSA_H

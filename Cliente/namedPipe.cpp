@@ -39,7 +39,13 @@ void NamedPipe::connectToServer(CLIENTE& user) {
 	std::_tcout << _T("A conectar ao servidor...");
 	if (!WaitNamedPipe(PIPE_BOLSA_NAME, NMPWAIT_WAIT_FOREVER)) {
 		std::stringstream ss;
-		ss << "Erro ao esperar pelo servidor (" << GetLastError() << ")";
+
+		if (GetLastError() == ERROR_FILE_NOT_FOUND)
+			ss << "O servidor fechou, a sair do programa...";
+
+		else 
+			ss << "Erro ao esperar pelo servidor (" << GetLastError() << ")";
+
 		throw std::runtime_error(ss.str());
 	}
 
@@ -78,9 +84,7 @@ DWORD WINAPI NamedPipe::receiverMessage(LPVOID lpParam) {
 
 	std::_tcout << _T("à espera de autenticação... ");
 
-	//TODO: msg with trash
-
-	while (user->running) {
+	while (user->runnig) {
 		ret = ReadFile(user->hPipeInst.hPipe, (LPVOID)&msg, sizeof(MESSAGE), &nBytes, &user->hPipeInst.oOverlap);
 		while (!ret) {
 			switch (GetLastError()) {
@@ -92,22 +96,21 @@ DWORD WINAPI NamedPipe::receiverMessage(LPVOID lpParam) {
 				case ERROR_BROKEN_PIPE:
 				case ERROR_PIPE_NOT_CONNECTED:
 					std::_tcout << std::endl << TAG_ERROR << TEXT("O servidor encerrou. Pressione 'Enter' para sair do programa...") << std::endl;
-					user->running = false;
+					user->runnig = false;
 					user->logged = false;
+					SetEvent(user->hEventConsole);
 					return THREAD_CODE::STOP;
 
 				case ERROR_OPERATION_ABORTED:
+					SetEvent(user->hEventConsole);
 					return THREAD_CODE::SUCESS;
 
 				default:
 					std::_tcout << TAG_ERROR << TEXT("Erro ao ler a mensagem (") << GetLastError() << _T(")") << std::endl;
+					SetEvent(user->hEventConsole);
 					return THREAD_CODE::ERRO;
 			}
 		}
-
-		// Se não tiver feito login, ignora todas as mensagens exceto o login
-		if (!user->logged && msg.code != CODE_LOGIN)
-			continue;
 
 		switch (msg.code) {
 			case CODE_LOGIN:
@@ -120,7 +123,8 @@ DWORD WINAPI NamedPipe::receiverMessage(LPVOID lpParam) {
 
 			case CODE_DENID:
 				std::_tcout << TEXT("Autenticação negada. Verifique as credênciais") << std::endl;
-				return 1;
+				SetEvent(user->hEventConsole);
+				return THREAD_CODE::STOP;
 
 			case CODE_FULL:
 				user->inQueue = true;

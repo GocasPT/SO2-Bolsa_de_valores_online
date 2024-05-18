@@ -4,6 +4,7 @@
 #include "commands.h"
 #include "fileManager.h"
 #include "companyManager.h"
+#include "bolsa.h"
 #include <fcntl.h>
 #include <io.h>
 
@@ -28,6 +29,7 @@ void closeServer(BOLSA& servidor) {
 	SharedMemory::close(servidor);
 	NamedPipe::close(servidor);
 	//TODO: Files::write_files(servidor);
+	SetEvent(servidor.hExitEvent);
 }
 
 void configServer(BOLSA &servidor) {
@@ -35,6 +37,13 @@ void configServer(BOLSA &servidor) {
 
 	servidor.isRunning = true;
 	servidor.isPaused = false;
+
+	servidor.hExitEvent = CreateEvent(NULL, TRUE, FALSE, EXIT_EVENT_NAME);
+	if (servidor.hExitEvent == NULL) {
+		std::_tcout << _T("[ERRO] Falha na criação do evento: ") << GetLastError() << std::endl;
+		closeServer(servidor);
+		return;
+	}
 
 	try {
 		Files::read_files(servidor);

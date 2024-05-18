@@ -230,7 +230,7 @@ DWORD WINAPI NamedPipe::receiverRoutine(LPVOID lpParam) {
 					std::_tcout << _T(" conectado") << std::endl;
 
 					user.connected = true;
-					TDATA newTDate = { data->isRunning, data->isPaused, data->notifyData, // Referencias
+					TDATA newTDate = { data->isRunning, data->isPaused, *(data->sharedMemory), data->notifyData, // Referencias
 						data->userList, data->hUsersQueue, data->companyList, // Listas
 						0, &user, // Dados
 						data->cs // CS
@@ -253,9 +253,10 @@ DWORD WINAPI NamedPipe::receiverRoutine(LPVOID lpParam) {
 				}
 				
 			} else {
+				send(data->hPipeInst, { CODE_DENID });
+				Sleep(1000);
 				CloseHandle(data->hPipeInst.hPipe);
 				CloseHandle(data->hPipeInst.hEvent);
-				data->hPipeInst = newNamedPipe();
 			}
 
 			std::_tcout << _T("A criar um novo named pipe para atender um novo cliente...") << std::endl;
@@ -514,6 +515,8 @@ void NamedPipe::responseBuy(TDATA& data, std::TSTRING companyName, DWORD amount)
 	else {
 		if (SWManager::addStock(*data.myUser, *company, amount)) {
 			_tcscpy_s(msg.data, _T("Compra efetuada com sucesso"));
+			_tcscpy_s(data.notifyData.user.name, data.myUser->name);
+			data.notifyData.numStocks = amount;
 			CompanyManager::updateStock(data.notifyData, *company, CompanyManager::BUY);
 		}
 		else
@@ -542,6 +545,8 @@ void NamedPipe::responseSell(TDATA& data, std::TSTRING companyName, DWORD amount
 
 	else if (SWManager::removeStock(*data.myUser, *company, amount)) {
 		_tcscpy_s(msg.data, _T("Venda efetuada com sucesso"));
+		data.notifyData.numStocks = amount;
+		_tcscpy_s(data.notifyData.user.name, data.myUser->name);
 		CompanyManager::updateStock(data.notifyData, *company, CompanyManager::SELL);
 	} else
 		_tcscpy_s(msg.data, _T("Não tens esse número de ações para vender"));

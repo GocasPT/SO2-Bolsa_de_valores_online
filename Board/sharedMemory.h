@@ -8,7 +8,7 @@
 
 namespace SharedMemory {
 	void connect(BOARD& board);
-	void read(BOARD& board);
+	bool read(BOARD& board);
 	void close(BOARD& board);
 }
 #endif // !SHARED_MEMORY_H
