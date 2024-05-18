@@ -33,7 +33,7 @@ void CompanyManager::addCompany(BOLSA& servidor, std::TSTRING name, DWORD numOfS
 		return;
 	}
 
-	COMPANY company;
+	COMPANY company{};
 	_tcscpy_s(company.name, name.c_str());
 	company.numFreeStocks = numOfStock;
 	company.pricePerStock = pricePerStock;
@@ -93,7 +93,7 @@ void CompanyManager::updateStock(BOLSA& servidor, std::TSTRING name, float price
 
 void CompanyManager::updateStock(NOTIFY_DATA& notifyData, COMPANY& company, OPERATION opType) {
 	float oldPrice = company.pricePerStock;
-	float variation = (rand() % 10) / 100.0f;
+	float variation = ((rand() % 10) / 100.0f) + 0.01;
 
 	switch (opType) {
 		case CompanyManager::BUY:

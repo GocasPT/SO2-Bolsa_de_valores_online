@@ -32,15 +32,14 @@ void SharedMemory::config(BOLSA& servidor) {
 }
 
 bool compareStockPrice(const COMPANY& c1, const COMPANY& c2) {
-	return c1.pricePerStock >= c2.pricePerStock;
+	return c1.pricePerStock > c2.pricePerStock;
 }
 
 void SharedMemory::update(BOLSA &servidor) {
 	ZeroMemory(servidor.sharedMemory->companies, sizeof(COMPANY) * MAX_COMPANIES);
-	sort(servidor.companyList.begin(), servidor.companyList.end(), compareStockPrice);
 	std::copy(servidor.companyList.begin(), servidor.companyList.end(), servidor.sharedMemory->companies);
 
-	servidor.sharedMemory->numCompanies = servidor.companyList.size();
+	std::sort(servidor.sharedMemory->companies, servidor.sharedMemory->companies + MAX_COMPANIES, compareStockPrice);
 
 	if (servidor.notifyData.company) {
 		_tcscpy_s(servidor.sharedMemory->lastTransaction.companyName, servidor.notifyData.company->name);
