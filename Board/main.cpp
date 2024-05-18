@@ -23,12 +23,13 @@ void printTransaction(TRANSACTION t) {
 
 void printBoard(BOARD board) {
 	system("cls");
-	std::_tcout << "Name\nNumber of Free Stocks\nPrice Per Stock" << std::endl;
+	std::_tcout << "Name | Number of Free Stocks | Price Per Stock" << std::endl;
 	for (DWORD i = 0; i < board.N; i++) {
 		printCompany(board.data.companies[i]);
 	}
 
 	if (board.data.lastTransaction.numStocks != 0) {
+		std::_tcout << std::endl;
 		printTransaction(board.data.lastTransaction);
 	}
 }

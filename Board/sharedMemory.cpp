@@ -61,10 +61,8 @@ void SharedMemory::close(BOARD& board) {
 
     CloseHandle(board.hEvent);
 
-    if (!board.sharedMemory) {
-        board.sharedMemory->numBoards--;
-        UnmapViewOfFile(board.sharedMemory);
-    }
+    board.sharedMemory->numBoards--;
+    UnmapViewOfFile(board.sharedMemory);
 
     CloseHandle(board.hSharedMemory);
 
