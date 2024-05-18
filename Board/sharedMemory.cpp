@@ -39,7 +39,6 @@ bool SharedMemory::read(BOARD& board) {
 
     if (WaitForMultipleObjects(2, events, FALSE, INFINITE) == WAIT_OBJECT_0) {
         CopyMemory(&board.data, board.sharedMemory, sizeof(SHARED_MEMORY));
-        //TODO: recebe a lista depois faz um 'crop' para o tamanho certo (recebe tudo, depois mostrar/guarda na memória a parte que quer)
 
         board.sharedMemory->boardsRead++;
 

@@ -42,7 +42,6 @@ void SharedMemory::update(BOLSA &servidor) {
 
 	servidor.sharedMemory->numCompanies = servidor.companyList.size();
 
-	// TODO acrescentar última transação: servidor.data->lastTransaction = servidor.lastTransaction;
 	if (servidor.notifyData.company) {
 		_tcscpy_s(servidor.sharedMemory->lastTransaction.companyName, servidor.notifyData.company->name);
 		_tcscpy_s(servidor.sharedMemory->lastTransaction.username, servidor.notifyData.user.name);
