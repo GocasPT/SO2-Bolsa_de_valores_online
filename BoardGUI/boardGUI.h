@@ -9,6 +9,8 @@ typedef struct {
 	/* GENERAL */
 	bool isRunning;
 	bool isPaused;
+	DWORD N;
+	DWORD scale;
 
 	/* SHARED MEMORY */
 	HANDLE hSharedMemory; // Handle shared memory
@@ -18,6 +20,9 @@ typedef struct {
 	HANDLE hExitEvent;
 
 	SHARED_MEMORY data;
+	HANDLE hMutex;
+
+	HWND hWnd;
 } BOARD;
 
 #endif // !BOARD_GUI_H
