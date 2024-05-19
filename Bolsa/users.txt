@@ -1,6 +1,6 @@
-maria qwerty 420.69
-ze zetest 5919.1
-gui abc 1234.56
-joao 1234 3000
+maria qwerty 4200.69
+ze zetest 59190.1
+gui abc 22340.56
+joao 1234 23380.4
 pedro 2424 1927.1
-bata 123 10.5 
+bata 123 1000.5

@@ -14,7 +14,7 @@ void Files::read_files(BOLSA& servidor) {
 	file.open(FILE_USERS);
 	if (file.is_open()) {
 		while (std::getline(file, line)) {
-			USER user;
+			USER user{};
 			ss << line;
 			ss >> user.name >> user.password >> user.balance;
 			user.connected = false;
@@ -45,7 +45,7 @@ void Files::read_files(BOLSA& servidor) {
 			ss << line;
 			ss >> name >> numFreeStocks >> pricePerStock;
 
-			COMPANY company;
+			COMPANY company{};
 			_tcscpy_s(company.name, name.c_str());
 			company.numFreeStocks = numFreeStocks;
 			company.pricePerStock = pricePerStock;
@@ -72,7 +72,7 @@ void Files::write_files(BOLSA& servidor) {
 
 	file.open(FILE_USERS, std::ios::out | std::ios::trunc);
 	if (file.is_open()) {
-		for (USER user : servidor.userList)
+		for (const USER &user : servidor.userList)
 			file << user.name << _T(" ") << user.password << _T(" ") << user.balance << std::endl;
 		
 		file.close();
@@ -87,7 +87,7 @@ void Files::write_files(BOLSA& servidor) {
 
 	file.open(FILE_COMPANIES, std::ios::out | std::ios::trunc);
 	if (file.is_open()) {
-		for (COMPANY company : servidor.companyList)
+		for (const COMPANY &company : servidor.companyList)
 			file << company.name << _T(" ") << company.numFreeStocks << _T(" ") << company.pricePerStock << std::endl;
 		
 		file.close();
@@ -99,6 +99,4 @@ void Files::write_files(BOLSA& servidor) {
 	}
 
 	std::_tcout << _T("Dados guardados no ficheiro '") << FILE_COMPANIES << _T("' com sucesso (2/") << TOTAL_FILES - 1 << _T(")") << std::endl;
-
-	std::_tcout << _T("Dados guardados no ficheiroscom sucesso") << std::endl << std::endl;
 }

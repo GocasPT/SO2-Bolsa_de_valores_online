@@ -28,7 +28,7 @@ void closeServer(BOLSA& servidor) {
 	CompanyManager::close(servidor);
 	SharedMemory::close(servidor);
 	NamedPipe::close(servidor);
-	//TODO: Files::write_files(servidor);
+	Files::write_files(servidor);
 	SetEvent(servidor.hExitEvent);
 }
 
