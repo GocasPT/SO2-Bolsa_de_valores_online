@@ -74,7 +74,6 @@ int _tmain(int argc, std::TSTRING argv[]) {
 
 	configServer(servidor);
 
-	//TODO: PLACEHOLDER
 	SharedMemory::update(servidor);
 
 	cmd::consoleRoutine(servidor);

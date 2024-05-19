@@ -57,7 +57,6 @@ void CompanyManager::listCompanies(BOLSA& servidor) {
 		std::_tcout << _T("Nome: ") << it->name << _T(" | Nº de Ações: ") << it->numFreeStocks << _T(" | Preço por Ação: ") << it->pricePerStock << std::endl;
 
 	std::_tcout << std::endl;
-	//TODO: SetEvent(servidor.hConsolaEvent);
 }
 
 COMPANY* CompanyManager::getCompany(COMPANY_LIST& companyList, std::TSTRING name) {
@@ -82,13 +81,10 @@ void CompanyManager::updateStock(BOLSA& servidor, std::TSTRING name, float price
 
 	std::_tcout << TAG_NORMAL << _T("Preço das ações atualizado com sucesso") << std::endl << _T("Nome: ") << name << _T(" | Preço por Ação: ") << _T(" de ") << oldPrice << _T(" para ") << company->pricePerStock << std::endl << std::endl;
 
-	//TODO: SetEvent(servidor.hConsolaEvent);
-
 	EnterCriticalSection(&servidor.cs);
 	servidor.notifyData = { company, oldPrice };
 	LeaveCriticalSection(&servidor.cs);
 	SetEvent(servidor.hNotifyEvent);
-	//TODO: triger SM
 }
 
 void CompanyManager::updateStock(NOTIFY_DATA& notifyData, COMPANY& company, OPERATION opType) {
@@ -105,15 +101,10 @@ void CompanyManager::updateStock(NOTIFY_DATA& notifyData, COMPANY& company, OPER
 			break;
 	}
 
-	//TODO: show dif in price (old to new OR variation percentage)
 	std::_tcout << TAG_NORMAL << _T("Preço das ações atualizado com sucesso") << std::endl << _T("Nome: ") << company.name << _T(" | Preço por Ação: ") << company.pricePerStock << std::endl << std::endl;
 
-	//TODO: SetEvent(servidor.hConsolaEvent);
-
-	//EnterCriticalSection(&cs);
 	notifyData.company = &company;
 	notifyData.oldPrice = oldPrice;
-	//LeaveCriticalSection(&cs);
 
 	HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, EVENT_NOTIFY);
 	if (hEvent == NULL) {
@@ -123,7 +114,6 @@ void CompanyManager::updateStock(NOTIFY_DATA& notifyData, COMPANY& company, OPER
 	}
 
 	SetEvent(hEvent);
-	//TODO: triger SM
 }
 
 void CompanyManager::pauseCompaniesOps(BOLSA& servidor, int time) {
@@ -135,12 +125,6 @@ void CompanyManager::pauseCompaniesOps(BOLSA& servidor, int time) {
 
 DWORD WINAPI CompanyManager::timerRoutine(LPVOID lpParam) {
 	TIMER_DATA* data = (TIMER_DATA*)lpParam;
-	/*TODO: HANDLE hEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, EVENT_CONSOLE);
-	if (hEvent == NULL) {
-		std::stringstream ss;
-		ss << "Erro ao abrir o evento para a consola (" << GetLastError() << ")";
-		return THREAD_CODE::ERRO;
-	}*/
 
 	std::_tcout << std::endl << _T("Thread do timer iniciada") << std::endl;
 
@@ -152,7 +136,6 @@ DWORD WINAPI CompanyManager::timerRoutine(LPVOID lpParam) {
 
 		*(data->isPaused) = true;
 		std::_tcout << std::endl << _T("Pausa das operações de compra e venda de ações por ") << data->time << _T(" segundos...") << std::endl;
-		//TODO: SetEvent(hConsolaEvent);
 
 		Sleep(1000 * data->time);
 

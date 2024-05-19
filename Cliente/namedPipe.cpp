@@ -131,7 +131,6 @@ DWORD WINAPI NamedPipe::receiverMessage(LPVOID lpParam) {
 				std::_tcout << TEXT("Servidor cheio, está na fila de espera. Tem permissão para utilizar alguns comandos") << std::endl;
 				break;
 
-			//TODO: recevie free_slot message (its connected and talking with)
 			case CODE_FREE_SLOT:
 				user->inQueue = false;
 				std::_tcout << TEXT("Já está a ser atendido pelo servidor") << std::endl;

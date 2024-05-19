@@ -27,7 +27,6 @@ void cmd::consoleRoutine(BOLSA& servidor) {
 			continue;
 		}
 
-		//TODO: WaitForSingleObject(servidor.hEventConsole, INFINITE);
 	} while (input.compare(CMD_CLOSE) && servidor.isRunning);
 }
 

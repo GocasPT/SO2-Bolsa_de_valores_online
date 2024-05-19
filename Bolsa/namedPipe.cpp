@@ -160,7 +160,6 @@ DWORD WINAPI NamedPipe::dataRoutine(LPVOID lpParam) {
 					[code](TDATA tData) { return tData.tID == code; });
 
 				if (tDataIt == data->tDataList.end()) {
-					//TODO: error
 					continue;
 				}
 
