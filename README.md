@@ -6,7 +6,7 @@ Trabalho prático feita por:
 - João Neves
 
 Nota: 
-- Meta 1: 97.5
+- Meta 1: 97.5%
 - Meta 2: 
 
 Funções em falta:
