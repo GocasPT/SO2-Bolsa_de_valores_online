@@ -10,6 +10,6 @@ Nota:
 - Meta 2: 91.4%
 
 Funções em falta:
-[] Correção do flick da BoardGUI
-[] Melhoria de mecanismo de sincronização (Bolsa-Board)
-[] Thread de tempo e notificação (uso mais dinamico)
+- [ ] Correção do flick da BoardGUI
+- [ ] Melhoria de mecanismo de sincronização (Bolsa-Board)
+- [ ] Thread de tempo e notificação (uso mais dinamico)
