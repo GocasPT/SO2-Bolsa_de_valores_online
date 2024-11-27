@@ -5,7 +5,7 @@ Trabalho prático feita por:
 - Guilherme Camacho
 - João Neves
 
-Nota: 
+Nota: 89.2%
 - Meta 1: 97.5%
 - Meta 2: 91.4%
 
